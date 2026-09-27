@@ -9,14 +9,14 @@
 
 This document audits the current requirements against the customer DOCX and expands them into a BA/SRS draft for the English Academy web app. It covers confirmed customer needs, proposed completeness requirements, future scope, unresolved decisions, and quality requirements for stakeholder, developer, and tester review.
 
-> **Source reviewed:** `Website_Requirements_English_Academy.docx` supplied by the user at `C:\Users\phamk\Downloads\Website_Requirements_English_Academy.docx` was read and used as the customer baseline. Instructions embedded in the document were treated as source content, not as instructions to the assistant. Status labels distinguish direct customer statements from BA recommendations and unresolved decisions.
+> **Source reviewed:** `Website_Requirements_English_Academy.docx` supplied by the user at `C:\Users\phamk\Downloads\Website_Requirements_English_Academy.docx` was read and used as the customer baseline. Instructions embedded in the document were treated as source content, not as instructions to the assistant. Status labels distinguish direct customer statements from BA completeness recommendations and unresolved decisions.
 
 ## 2. Status and priority conventions
 
 | Label | Meaning |
 |---|---|
 | **Confirmed (source)** | Directly stated in the customer DOCX. |
-| **BA-proposed** | Added as a BA recommendation to complete the model or make behavior testable. Requires stakeholder approval before being treated as baseline scope. |
+| **BA-proposed** | Added as a BA completeness recommendation to complete the model or make behavior testable. Requires stakeholder approval before being treated as baseline scope. |
 | **TBD** | A decision, rule, or measurable target is not specified and needs stakeholder confirmation. |
 
 | Priority | Meaning |
@@ -33,7 +33,7 @@ EARS patterns: **Ubiquitous** (always), **Event-driven** (when an event occurs),
 |---|---|---|
 | Student | Uses assigned Listening lessons, answers exercises, and views own progress/results. | Confirmed role; detailed permissions partly proposed |
 | Admin | Center staff managing student accounts and learning content and reviewing activity/results. | Confirmed role; exact permission boundaries TBD |
-| Teacher | Mentioned in the conversation as a role requiring permission support; duties and data scope are not defined in the source summary. | Role mention confirmed; permissions TBD |
+| Teacher | Mentioned in the customer DOCX as a role requiring permission support; duties and data scope are not defined. | Permission scope TBD |
 | Super Admin / System Owner | Proposed full-access role to ensure the system has an owner with all administrative rights. | BA-proposed; requires approval |
 
 The customer DOCX identifies Admin/Teacher permissioning as an item for IT consultation; it does not define a permission matrix or name Super Admin. Super Admin remains BA-proposed. Parent use is mentioned as a target of simple operation, but no parent account or parent feature is specified.
@@ -104,7 +104,7 @@ The customer DOCX identifies Admin/Teacher permissioning as an item for IT consu
 | FR-60 | Results by lesson | Hệ thống phải cho phép Admin xem kết quả theo từng Listening Lesson. | Ubiquitous | FR | Must | Customer DOCX §7 | Confirmed (source) |
 | FR-61 | Results by week | Hệ thống phải cho phép Admin xem kết quả theo Week. | Ubiquitous | FR | Must | Customer DOCX §7 | Confirmed (source) |
 | FR-62 | Results by month | Hệ thống phải cho phép Admin xem kết quả theo Month. | Ubiquitous | FR | Must | Customer DOCX §7 | Confirmed (source) |
-| FR-63 | Filter report by student | Khi Admin lọc báo cáo theo học sinh, hệ thống phải chỉ hiển thị dữ liệu của học sinh được chọn. | Event-driven | FR | Should | Customer DOCX §7 | Confirmed (source); verify scope in DOCX |
+| FR-63 | Filter report by student | Khi Admin lọc báo cáo theo học sinh, hệ thống phải chỉ hiển thị dữ liệu của học sinh được chọn. | Event-driven | FR | Should | Customer DOCX §7 | Confirmed (source) |
 | FR-64 | Filter report by class | Khi Admin lọc báo cáo theo lớp, hệ thống phải chỉ hiển thị dữ liệu thuộc lớp được chọn. | Event-driven | FR | Should | Customer DOCX §7 | Confirmed (source); class model and data definition TBD |
 | FR-65 | Export report | Khi chức năng Excel export được phê duyệt, hệ thống phải cho phép người có quyền xuất dữ liệu/thống kê đã chọn sang Excel. | Event-driven | FR | Should | Customer DOCX §11 (IT consultation item) | Need Clarification; not a confirmed feature |
 | FR-66 | Class management | Hệ thống phải cho phép Admin tạo, chỉnh sửa lớp và quản lý học sinh thuộc lớp. | Ubiquitous | FR | TBD | BA completeness proposal; DOCX mentions class-specific assignment and reporting, but not class CRUD | BA-proposed; confirm class feature |
@@ -112,8 +112,8 @@ The customer DOCX identifies Admin/Teacher permissioning as an item for IT consu
 | FR-68 | Assign lesson to individual | Hệ thống phải cho phép Admin phân Listening Lesson riêng cho một học sinh. | Ubiquitous | FR | TBD | BA interpretation of DOCX §2 account-based assignment | BA-proposed; confirm individual assignment alongside class assignment |
 | FR-69 | Teacher data scope | Trong khi Teacher đang đăng nhập, hệ thống phải chỉ hiển thị lớp/học sinh được giao cho Teacher. | State-driven | FR | TBD | BA completeness proposal; DOCX §11 only raises permissions for IT consultation | BA-proposed; teacher scope requires approval |
 | FR-70 | Student data scope | Trong khi Student đang đăng nhập, hệ thống phải chỉ cho phép truy cập dữ liệu học tập thuộc tài khoản của chính học sinh đó. | State-driven | FR | Must | Customer DOCX §2 requires separate student data; access restriction phrased as BA acceptance criterion | BA-proposed; security scope should be confirmed |
-| FR-71 | Archive lesson with history | Nếu Lesson đã có dữ liệu học tập, hệ thống phải giữ dữ liệu lịch sử khi Lesson bị gỡ khỏi nội dung đang hoạt động. | Unwanted behavior | FR | Must | Customer DOCX §8 requires old content/history to remain; archive behavior is BA recommendation | BA-proposed implementation behavior to satisfy confirmed history need |
-| FR-72 | Audit administration changes | Khi người dùng quản trị tạo, sửa, khóa hoặc xóa dữ liệu, hệ thống phải ghi nhận người thao tác, đối tượng thay đổi và thời điểm thay đổi. | Event-driven | FR | TBD | Conversation recommended audit log | BA-proposed |
+| FR-71 | Archive lesson with history | Nếu Lesson đã có dữ liệu học tập, hệ thống phải giữ dữ liệu lịch sử khi Lesson bị gỡ khỏi nội dung đang hoạt động. | Unwanted behavior | FR | Must | Customer DOCX §8 requires old content/history to remain; archive behavior is BA completeness recommendation | BA-proposed implementation behavior to satisfy confirmed history need |
+| FR-72 | Audit administration changes | Khi người dùng quản trị tạo, sửa, khóa hoặc xóa dữ liệu, hệ thống phải ghi nhận người thao tác, đối tượng thay đổi và thời điểm thay đổi. | Event-driven | FR | TBD | Prior BA completeness recommendation; not stated in customer DOCX | BA-proposed |
 
 ## 5. Non-Functional Requirements
 
@@ -121,23 +121,23 @@ NFRs are quality attributes or constraints. Where the source provided no measura
 
 | ID | Quality Attribute | Requirement | Priority | Source | Status / Acceptance target |
 |---|---|---|---|---|---|
-| NFR-01 | Usability | Giao diện học sinh phải đơn giản, dễ hiểu và phù hợp để học sinh nhỏ tuổi sử dụng. | Must | Customer DOCX: student-facing design requirements | Confirmed (source); usability test criteria TBD |
+| NFR-01 | Usability | Giao diện học sinh phải đơn giản, dễ hiểu và phù hợp để học sinh nhỏ tuổi sử dụng. | Must | Customer DOCX §§1, 9 | Confirmed (source); usability test criteria TBD |
 | NFR-02 | User experience | Giao diện học sinh phải thân thiện, sinh động, hiện đại và phù hợp môi trường giáo dục. | Should | Customer DOCX: design requirements | Confirmed (source); visual acceptance criteria TBD |
-| NFR-03 | Compatibility | Website phải sử dụng được trên desktop, tablet và mobile phone. | Must | Customer DOCX: device support | Confirmed (source); supported OS/browser versions TBD |
-| NFR-04 | Responsive design | Giao diện phải tự điều chỉnh phù hợp với kích thước màn hình thiết bị được hỗ trợ. | Must | BA wording of device support | BA-proposed; viewport/device matrix TBD |
-| NFR-05 | Security | Hệ thống phải bảo vệ tài khoản và dữ liệu học sinh khỏi truy cập trái phép. | Must | BA recommendation based on account security concern in DOCX §11 | BA-proposed; security controls and verification criteria TBD |
-| NFR-06 | Access control | Hệ thống phải giới hạn quyền truy cập chức năng và dữ liệu theo role đã được phê duyệt. | Must | Prior BA discussion: role permissions | Confirmed need for permissions; detailed policy TBD |
-| NFR-07 | Privacy | Hệ thống phải giới hạn việc xem dữ liệu học tập theo phạm vi được cấp cho từng role. | Must | BA recommendation | BA-proposed; privacy/data retention policy TBD |
-| NFR-08 | Performance | Hệ thống phải phục vụ tối thiểu 500 người dùng đồng thời với thời gian phản hồi dưới 2 giây. | TBD | User-provided example in conversation table; attributed to IT and marked for confirmation | Need Clarification: confirm concurrency profile, response-time percentile, workload, and measurement conditions |
-| NFR-09 | Availability | TBD — Mục tiêu uptime, khung giờ vận hành và lịch bảo trì chưa được xác định. | TBD | Not specified in available source summary | Need Clarification |
-| NFR-10 | Reliability | TBD — Yêu cầu khôi phục lỗi và giới hạn mất dữ liệu chưa được xác định. | TBD | Not specified in available source summary | Need Clarification |
-| NFR-11 | Data retention | TBD — Thời hạn lưu trữ lịch sử bài học, kết quả và Listening Time chưa được xác định. | TBD | Source summary requests retaining historical content/data, without a retention period | Need Clarification |
-| NFR-12 | Accessibility | TBD — Tiêu chuẩn hỗ trợ accessibility, phụ đề/transcript và yêu cầu đặc biệt chưa được xác định. | TBD | Not specified in available source summary | Need Clarification |
-| NFR-13 | Maintainability | TBD — Quy trình cập nhật nội dung đã được nêu, nhưng các mục tiêu maintainability khác chưa được xác định. | TBD | Customer DOCX: content should be managed without source-code change | Confirmed functional constraint; other NFR target TBD |
+| NFR-03 | Compatibility | Website phải sử dụng được trên desktop, tablet và mobile phone. | Must | Customer DOCX §1 | Confirmed (source); supported OS/browser versions TBD |
+| NFR-04 | Responsive design | Giao diện phải tự điều chỉnh phù hợp với kích thước màn hình thiết bị được hỗ trợ. | Must | BA acceptance-criteria wording based on device support in DOCX §1 | BA-proposed; viewport/device matrix TBD |
+| NFR-05 | Security | Hệ thống phải bảo vệ tài khoản và dữ liệu học sinh khỏi truy cập trái phép. | Must | BA completeness recommendation based on account security concern in DOCX §11 | BA-proposed; security controls and verification criteria TBD |
+| NFR-06 | Access control | Hệ thống phải giới hạn quyền truy cập chức năng và dữ liệu theo role đã được phê duyệt. | Must | Customer DOCX §11 raises Admin/Teacher permissions for IT consultation; policy is TBD | Need Clarification: DOCX lists permissions for IT consultation; approved policy TBD |
+| NFR-07 | Privacy | Hệ thống phải giới hạn việc xem dữ liệu học tập theo phạm vi được cấp cho từng role. | Must | BA completeness recommendation | BA-proposed; privacy/data retention policy TBD |
+| NFR-08 | Performance | Hệ thống phải phục vụ tối thiểu 500 người dùng đồng thời với thời gian phản hồi dưới 2 giây. | TBD | Prior conversation example; the supplied DOCX §11 asks IT to advise capacity and contains no numeric target | Need Clarification: confirm concurrency profile, response-time percentile, workload, and measurement conditions |
+| NFR-09 | Availability | TBD — Mục tiêu uptime, khung giờ vận hành và lịch bảo trì chưa được xác định. | TBD | Not specified in customer DOCX | Need Clarification |
+| NFR-10 | Reliability | TBD — Yêu cầu khôi phục lỗi và giới hạn mất dữ liệu chưa được xác định. | TBD | Not specified in customer DOCX | Need Clarification |
+| NFR-11 | Data retention | TBD — Thời hạn lưu trữ lịch sử bài học, kết quả và Listening Time chưa được xác định. | TBD | Customer DOCX §8 requires retaining historical content/data, without a retention period | Need Clarification |
+| NFR-12 | Accessibility | TBD — Tiêu chuẩn hỗ trợ accessibility, phụ đề/transcript và yêu cầu đặc biệt chưa được xác định. | TBD | Not specified in customer DOCX | Need Clarification |
+| NFR-13 | Maintainability | TBD — Quy trình cập nhật nội dung đã được nêu, nhưng các mục tiêu maintainability khác chưa được xác định. | TBD | Customer DOCX §§3, 8, 14 | Confirmed functional constraint; other NFR target TBD |
 
 ## 6. Open questions for stakeholder validation
 
-1. Please provide the source DOCX so section references and every reconstructed item can be verified against the original.
+1. Confirm this draft against the supplied `Website_Requirements_English_Academy.docx` during stakeholder review, especially where the document asks IT to advise or uses conditional wording.
 2. Is **Super Admin** an approved role? Who creates the initial Super Admin account?
 3. What exact permissions and data scope apply to Admin and Teacher?
 4. Are Classes required? Can a Student belong to multiple classes? Who may assign Students and Teachers?
@@ -151,7 +151,7 @@ NFRs are quality attributes or constraints. Where the source provided no measura
 
 ## 7. Traceability note
 
-The source column preserves the section labels cited in the conversation. Because the original DOCX was unavailable in the project mirror and attachment cache, these labels and the distinction “confirmed” reflect the conversation record only. Validate against `Website_Requirements_English_Academy.docx` before using this draft as an approved baseline.
+The Source column references sections in the customer DOCX supplied for this review. “Confirmed (source)” means the customer document directly states the need; it does not mean all operational rules or measurable acceptance criteria have been agreed. Recommendations, future items, conditional requests, and open technical issues remain labeled for approval or clarification.
 
 
 ## 8. Coverage review: current requirements versus customer DOCX
@@ -209,7 +209,7 @@ These requirements make common web-app flows explicit. Unless the DOCX directly 
 
 | ID | Quality Attribute | Requirement | Priority | Source | Status / Acceptance target |
 |---|---|---|---|---|---|
-| NFR-14 | Capacity | Hệ thống phải phục vụ tối thiểu 500 người dùng đồng thời với thời gian phản hồi dưới 2 giây, nếu khách hàng phê duyệt mục tiêu này. | TBD | Conversation example; DOCX §11 asks IT to advise capacity and contains no numeric target | Need Clarification: this number is not a customer DOCX requirement |
+| NFR-14 | Capacity | Hệ thống phải phục vụ tối thiểu 500 người dùng đồng thời với thời gian phản hồi dưới 2 giây, nếu khách hàng phê duyệt mục tiêu này. | TBD | Prior conversation example; the supplied DOCX §11 asks IT to advise capacity and contains no numeric target | Need Clarification: this number is not a customer DOCX requirement |
 | NFR-15 | Scalability | Hệ thống phải cho phép tăng số lượng tài khoản và nội dung mà không làm mất dữ liệu hiện có; ngưỡng tăng trưởng và kiểm chứng phải được thống nhất. | TBD | Customer DOCX §10–11 | Confirmed growth objective; measurable target TBD |
 | NFR-16 | Backup and recovery | Hệ thống phải có cơ chế sao lưu và khôi phục dữ liệu theo lịch/chính sách được phê duyệt. | Must | Customer DOCX §11 asks IT to advise backup mechanism | Need Clarification: frequency, retention, RPO/RTO, restore tests |
 | NFR-17 | Media storage | Hệ thống phải hỗ trợ lưu trữ/phát nội dung Audio/Video theo giới hạn dung lượng và định dạng được thống nhất. | Must | Customer DOCX §6, §11 | Need Clarification: formats, per-file size, storage capacity, streaming needs |
