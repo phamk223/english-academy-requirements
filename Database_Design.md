@@ -12,9 +12,22 @@ This document proposes a normalized database structure for the English Academy w
 
 The implementation reference in [`database/schema.sql`](./database/schema.sql) uses PostgreSQL types and syntax. The selected database engine, hosting, media storage, security controls, and migration conventions must be confirmed with IT before applying it. The schema stores media metadata/references; it does not store large audio/video binaries in database rows.
 
+## 1.1 Simplified MVP proposal
+
+[`English_Academy_Database.dbml`](./English_Academy_Database.dbml) is a 15-table conceptual MVP proposal intended to make the ERD easier to review. It is not yet a replacement for the full 23-table PostgreSQL reference schema in `database/schema.sql`.
+
+The proposal reduces the model by:
+
+- Storing a single role plus optional Student/Teacher codes in `users`, instead of separate role and profile tables. This assumes one role per account and needs approval.
+- Storing year, month, and week together in `learning_weeks`, instead of separate month and week tables.
+- Deferring Teacher-to-class assignments, direct individual lesson assignments, and audit history until their MVP scope is confirmed.
+- Keeping lesson versions, questions/options, protected answer keys, student attempts, and playback events because they preserve content history, grading, and Listening Time records.
+
+The simplified answer table uses ordinary foreign keys. The Backend must validate that an answer's question belongs to the lesson version used by its attempt. The full SQL reference currently enforces that rule with composite foreign keys.
+
 ## 2. Design principles
 
-- Each Student account has a separate profile and learning records.
+- Student learning records are tied to the account. The full SQL reference uses a separate profile row; the simplified MVP proposal keeps Student/Teacher codes in `users`.
 - Role authorization is enforced by Backend services. Database records alone do not replace authorization checks.
 - Old published lesson content remains addressable so previous attempts can be interpreted against the content the Student actually received.
 - Listening playback events are the source record; totals are derived from validated playback intervals, not from time that a page stayed open.
