@@ -322,6 +322,48 @@ Table audit_log {
   }
 }
 
+// Visual groups keep the ERD readable without changing database behavior.
+TableGroup accounts [color: #D6EAF8, note: 'Login identities, roles and role-specific profiles'] {
+  users
+  roles
+  user_roles
+  student_profiles
+  teacher_profiles
+}
+
+TableGroup classes [color: #D5F5E3, note: 'Class membership and teacher assignments'] {
+  classes
+  class_memberships
+  teacher_class_assignments
+}
+
+TableGroup curriculum [color: #FCF3CF, note: 'Monthly and weekly learning content, versions, media and questions'] {
+  learning_months
+  learning_weeks
+  lessons
+  lesson_versions
+  lesson_media
+  questions
+  question_options
+  question_answer_keys
+}
+
+TableGroup assignments [color: #FADBD8, note: 'Lessons assigned to classes or individual students'] {
+  class_lesson_assignments
+  student_lesson_assignments
+}
+
+TableGroup learner_activity [color: #E8DAEF, note: 'Student attempts, answers and Listening Time events'] {
+  lesson_attempts
+  lesson_attempt_answers
+  listening_sessions
+  listening_playback_events
+}
+
+TableGroup administration [color: #EAECEE, note: 'Administrative change history'] {
+  audit_log
+}
+
 Ref: user_roles.user_id > users.id
 Ref: user_roles.role_id > roles.id
 Ref: user_roles.assigned_by > users.id
