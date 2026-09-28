@@ -352,10 +352,10 @@ Ref: student_lesson_assignments.lesson_id > lessons.id
 Ref: student_lesson_assignments.assigned_by > users.id
 Ref: lesson_attempts.student_id > student_profiles.user_id
 Ref: lesson_attempts.lesson_version_id > lesson_versions.id
-Ref: lesson_attempt_answers.attempt_id, lesson_attempt_answers.lesson_version_id > lesson_attempts.id, lesson_attempts.lesson_version_id
-Ref: lesson_attempt_answers.question_id, lesson_attempt_answers.lesson_version_id > questions.id, questions.lesson_version_id
+Ref: lesson_attempt_answers.(attempt_id, lesson_version_id) > lesson_attempts.(id, lesson_version_id)
+Ref: lesson_attempt_answers.(question_id, lesson_version_id) > questions.(id, lesson_version_id)
 Ref: listening_sessions.student_id > student_profiles.user_id
 Ref: listening_sessions.lesson_version_id > lesson_versions.id
-Ref: listening_sessions.attempt_id, listening_sessions.student_id, listening_sessions.lesson_version_id > lesson_attempts.id, lesson_attempts.student_id, lesson_attempts.lesson_version_id
+Ref: listening_sessions.(attempt_id, student_id, lesson_version_id) > lesson_attempts.(id, student_id, lesson_version_id)
 Ref: listening_playback_events.session_id > listening_sessions.id
 Ref: audit_log.actor_user_id > users.id
