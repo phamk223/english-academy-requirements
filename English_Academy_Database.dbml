@@ -1,0 +1,361 @@
+// English Academy database schema (PostgreSQL logical model)
+// CHECK constraints and partial indexes are summarized in notes because DBML
+// does not represent every PostgreSQL-specific rule.
+
+Table users {
+  id uuid [pk, default: `gen_random_uuid()`]
+  username text [not null]
+  username_normalized text [not null, unique]
+  password_hash text [not null, note: 'Store a secure password hash only']
+  display_name text [not null]
+  email text
+  account_status text [not null, default: 'ACTIVE', note: 'ACTIVE | LOCKED | INACTIVE']
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  last_login_at timestamptz
+  deleted_at timestamptz
+}
+
+Table roles {
+  id smallint [pk, increment]
+  code text [not null, unique]
+  name text [not null]
+  description text
+  is_system boolean [not null, default: true]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table user_roles {
+  user_id uuid [not null, pk]
+  role_id smallint [not null, pk]
+  assigned_at timestamptz [not null, default: `now()`]
+  assigned_by uuid
+}
+
+Table student_profiles {
+  user_id uuid [pk]
+  student_code text [unique]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table teacher_profiles {
+  user_id uuid [pk]
+  teacher_code text [unique]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table classes {
+  id uuid [pk, default: `gen_random_uuid()`]
+  class_code text [not null, unique]
+  class_name text [not null]
+  description text
+  status text [not null, default: 'ACTIVE', note: 'ACTIVE | INACTIVE | ARCHIVED']
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  archived_at timestamptz
+}
+
+Table class_memberships {
+  id uuid [pk, default: `gen_random_uuid()`]
+  class_id uuid [not null]
+  student_id uuid [not null]
+  valid_from date [not null, default: `CURRENT_DATE`]
+  valid_until date
+  created_at timestamptz [not null, default: `now()`]
+  indexes {
+    (class_id, student_id, valid_from) [unique]
+    (student_id, valid_from, valid_until)
+  }
+}
+
+Table teacher_class_assignments {
+  id uuid [pk, default: `gen_random_uuid()`]
+  class_id uuid [not null]
+  teacher_id uuid [not null]
+  valid_from date [not null, default: `CURRENT_DATE`]
+  valid_until date
+  assigned_by uuid
+  created_at timestamptz [not null, default: `now()`]
+  indexes {
+    (class_id, teacher_id, valid_from) [unique]
+    (teacher_id, valid_from, valid_until)
+  }
+}
+
+Table learning_months {
+  id uuid [pk, default: `gen_random_uuid()`]
+  calendar_year smallint [not null, note: 'CHECK: 2000 through 2200']
+  month_number smallint [not null, note: 'CHECK: 1 through 12']
+  title text [not null]
+  status text [not null, default: 'DRAFT', note: 'DRAFT | ACTIVE | ARCHIVED']
+  created_by uuid
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  archived_at timestamptz
+  indexes {
+    (calendar_year, month_number) [unique]
+  }
+}
+
+Table learning_weeks {
+  id uuid [pk, default: `gen_random_uuid()`]
+  month_id uuid [not null]
+  week_number smallint [not null, note: 'CHECK: 1 through 6']
+  title text [not null]
+  start_date date
+  end_date date
+  sort_order smallint [not null, default: 1]
+  status text [not null, default: 'DRAFT', note: 'DRAFT | ACTIVE | ARCHIVED']
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  indexes {
+    (month_id, week_number) [unique]
+    (month_id, sort_order) [unique]
+  }
+}
+
+Table lessons {
+  id uuid [pk, default: `gen_random_uuid()`]
+  lesson_code text [unique]
+  created_by uuid
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  archived_at timestamptz
+}
+
+Table lesson_versions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  lesson_id uuid [not null]
+  week_id uuid [not null]
+  version_number int [not null, note: 'CHECK: greater than 0']
+  title text [not null]
+  description text
+  instructions text
+  status text [not null, default: 'DRAFT', note: 'DRAFT | PUBLISHED | ARCHIVED']
+  is_current boolean [not null, default: false]
+  published_at timestamptz
+  published_by uuid
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  indexes {
+    (lesson_id, version_number) [unique]
+    (id, lesson_id) [unique]
+    (week_id, status, is_current)
+  }
+  Note: 'PostgreSQL partial unique index enforces at most one current version per lesson; current versions must be PUBLISHED.'
+}
+
+Table lesson_media {
+  id uuid [pk, default: `gen_random_uuid()`]
+  lesson_version_id uuid [not null]
+  media_type text [not null, note: 'AUDIO | VIDEO']
+  source_type text [not null, note: 'UPLOAD | EXTERNAL_LINK']
+  storage_key text
+  external_url text
+  original_name text
+  mime_type text
+  size_bytes bigint [note: 'CHECK: non-negative when present']
+  duration_seconds int [note: 'CHECK: non-negative when present']
+  checksum text
+  sort_order smallint [not null, default: 1]
+  created_by uuid
+  created_at timestamptz [not null, default: `now()`]
+  indexes {
+    (lesson_version_id, sort_order) [unique]
+    (id, lesson_version_id) [unique]
+  }
+  Note: 'UPLOAD requires storage_key and no external_url; EXTERNAL_LINK requires external_url and no storage_key.'
+}
+
+Table questions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  lesson_version_id uuid [not null]
+  question_type text [not null, note: 'MULTIPLE_CHOICE | TRUE_FALSE | CHOOSE_CORRECT_ANSWER | SHORT_ANSWER | MATCHING']
+  prompt text [not null]
+  explanation text
+  points numeric(8,2) [not null, default: 1]
+  is_required boolean [not null, default: true]
+  sort_order smallint [not null]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  indexes {
+    (lesson_version_id, sort_order) [unique]
+    (id, lesson_version_id) [unique]
+  }
+}
+
+Table question_options {
+  id uuid [pk, default: `gen_random_uuid()`]
+  question_id uuid [not null]
+  option_key text [not null]
+  option_text text [not null]
+  sort_order smallint [not null]
+  indexes {
+    (question_id, option_key) [unique]
+    (question_id, sort_order) [unique]
+  }
+}
+
+Table question_answer_keys {
+  question_id uuid [pk]
+  answer_key jsonb [not null, note: 'Restrict access; never include in student API payloads']
+  updated_at timestamptz [not null, default: `now()`]
+  updated_by uuid
+}
+
+Table class_lesson_assignments {
+  id uuid [pk, default: `gen_random_uuid()`]
+  class_id uuid [not null]
+  lesson_id uuid [not null]
+  assigned_by uuid
+  assigned_at timestamptz [not null, default: `now()`]
+  available_from timestamptz
+  available_until timestamptz
+  due_at timestamptz
+  status text [not null, default: 'ACTIVE', note: 'ACTIVE | CANCELLED | ARCHIVED']
+  indexes {
+    (class_id, lesson_id, assigned_at) [unique]
+    (class_id, status, available_from, available_until)
+  }
+}
+
+Table student_lesson_assignments {
+  id uuid [pk, default: `gen_random_uuid()`]
+  student_id uuid [not null]
+  lesson_id uuid [not null]
+  assigned_by uuid
+  assigned_at timestamptz [not null, default: `now()`]
+  available_from timestamptz
+  available_until timestamptz
+  due_at timestamptz
+  status text [not null, default: 'ACTIVE', note: 'ACTIVE | CANCELLED | ARCHIVED']
+  indexes {
+    (student_id, lesson_id, assigned_at) [unique]
+    (student_id, status, available_from, available_until)
+  }
+}
+
+Table lesson_attempts {
+  id uuid [pk, default: `gen_random_uuid()`]
+  student_id uuid [not null]
+  lesson_version_id uuid [not null]
+  attempt_number int [not null, note: 'CHECK: greater than 0']
+  status text [not null, default: 'IN_PROGRESS', note: 'IN_PROGRESS | SUBMITTED | COMPLETED | ABANDONED']
+  started_at timestamptz [not null, default: `now()`]
+  submitted_at timestamptz
+  completed_at timestamptz
+  exercise_duration_seconds int
+  score numeric(10,2)
+  correct_count int
+  question_count int
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  indexes {
+    (student_id, lesson_version_id, attempt_number) [unique]
+    (id, student_id, lesson_version_id) [unique]
+    (id, lesson_version_id) [unique]
+    (student_id, started_at)
+    (lesson_version_id, status, submitted_at)
+  }
+  Note: 'CHECK constraints: durations, scores and counts are non-negative; correct_count cannot exceed question_count.'
+}
+
+Table lesson_attempt_answers {
+  id uuid [pk, default: `gen_random_uuid()`]
+  attempt_id uuid [not null]
+  question_id uuid [not null]
+  lesson_version_id uuid [not null]
+  answer_data jsonb [not null]
+  is_correct boolean
+  awarded_points numeric(8,2)
+  answered_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  indexes {
+    (attempt_id, question_id) [unique]
+    (question_id)
+  }
+}
+
+Table listening_sessions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  student_id uuid [not null]
+  lesson_version_id uuid [not null]
+  attempt_id uuid
+  started_at timestamptz [not null, default: `now()`]
+  ended_at timestamptz
+  credited_seconds int [not null, default: 0]
+  created_at timestamptz [not null, default: `now()`]
+  indexes {
+    (student_id, started_at)
+    (lesson_version_id, started_at)
+  }
+  Note: 'CHECK constraints: credited_seconds is non-negative; ended_at must not precede started_at.'
+}
+
+Table listening_playback_events {
+  id uuid [pk, default: `gen_random_uuid()`]
+  session_id uuid [not null]
+  client_event_id text [not null]
+  event_type text [not null, note: 'PLAY | PAUSE | RESUME | SEEK | HEARTBEAT | ENDED | ERROR']
+  client_occurred_at timestamptz
+  received_at timestamptz [not null, default: `now()`]
+  media_position_seconds int
+  metadata jsonb [not null, default: `'{}'`]
+  indexes {
+    (session_id, client_event_id) [unique]
+    (session_id, received_at)
+  }
+}
+
+Table audit_log {
+  id uuid [pk, default: `gen_random_uuid()`]
+  actor_user_id uuid
+  action text [not null]
+  target_type text [not null]
+  target_id uuid
+  occurred_at timestamptz [not null, default: `now()`]
+  change_summary jsonb [not null, default: `'{}'`]
+  request_id text
+  indexes {
+    (target_type, target_id, occurred_at)
+    (actor_user_id, occurred_at)
+  }
+}
+
+Ref: user_roles.user_id > users.id
+Ref: user_roles.role_id > roles.id
+Ref: user_roles.assigned_by > users.id
+Ref: student_profiles.user_id - users.id
+Ref: teacher_profiles.user_id - users.id
+Ref: class_memberships.class_id > classes.id
+Ref: class_memberships.student_id > student_profiles.user_id
+Ref: teacher_class_assignments.class_id > classes.id
+Ref: teacher_class_assignments.teacher_id > teacher_profiles.user_id
+Ref: teacher_class_assignments.assigned_by > users.id
+Ref: learning_months.created_by > users.id
+Ref: learning_weeks.month_id > learning_months.id
+Ref: lessons.created_by > users.id
+Ref: lesson_versions.lesson_id > lessons.id
+Ref: lesson_versions.week_id > learning_weeks.id
+Ref: lesson_versions.published_by > users.id
+Ref: lesson_media.lesson_version_id > lesson_versions.id
+Ref: lesson_media.created_by > users.id
+Ref: questions.lesson_version_id > lesson_versions.id
+Ref: question_options.question_id > questions.id
+Ref: question_answer_keys.question_id - questions.id
+Ref: question_answer_keys.updated_by > users.id
+Ref: class_lesson_assignments.class_id > classes.id
+Ref: class_lesson_assignments.lesson_id > lessons.id
+Ref: class_lesson_assignments.assigned_by > users.id
+Ref: student_lesson_assignments.student_id > student_profiles.user_id
+Ref: student_lesson_assignments.lesson_id > lessons.id
+Ref: student_lesson_assignments.assigned_by > users.id
+Ref: lesson_attempts.student_id > student_profiles.user_id
+Ref: lesson_attempts.lesson_version_id > lesson_versions.id
+Ref: lesson_attempt_answers.attempt_id, lesson_attempt_answers.lesson_version_id > lesson_attempts.id, lesson_attempts.lesson_version_id
+Ref: lesson_attempt_answers.question_id, lesson_attempt_answers.lesson_version_id > questions.id, questions.lesson_version_id
+Ref: listening_sessions.student_id > student_profiles.user_id
+Ref: listening_sessions.lesson_version_id > lesson_versions.id
+Ref: listening_sessions.attempt_id, listening_sessions.student_id, listening_sessions.lesson_version_id > lesson_attempts.id, lesson_attempts.student_id, lesson_attempts.lesson_version_id
+Ref: listening_playback_events.session_id > listening_sessions.id
+Ref: audit_log.actor_user_id > users.id
