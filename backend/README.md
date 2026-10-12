@@ -8,6 +8,22 @@ BE-004: xem [AUTH.md](./AUTH.md) cho login/logout/refresh/me, tạo tài khoản
 
 BE-005: xem [AUTHORIZATION.md](./AUTHORIZATION.md) cho global RBAC guard, decorators, ma trận quyền và route-level permission. Route mới mặc định bị từ chối khi chưa khai báo policy.
 
+## Test API bằng Swagger
+
+Mở [Swagger UI](http://localhost:3000/docs) sau khi chạy Docker. OpenAPI JSON ở [docs-json](http://localhost:3000/docs-json).
+
+1. Tạo tài khoản local theo mục CLI trong [AUTH.md](./AUTH.md); không có username/password mặc định.
+2. Mở `POST /auth/login`, bấm **Try it out**, nhập username/password và **Execute**.
+3. Copy `data.accessToken`, bấm **Authorize**, dán token (không thêm chữ `Bearer`). Chạy `GET /auth/me` để xem user/roles.
+4. Chạy `POST /auth/refresh` với `data.refreshToken`. Sau thành công thay cả access token trong Authorize và refresh token đang giữ.
+5. Chạy `POST /auth/logout` với refresh token mới nhất. `/auth/me` với token cũ sẽ trả 401.
+
+Swagger không giữ token qua reload; không chia sẻ response chứa token. Schema phản hồi gồm envelope BE-003 và lỗi validation theo field. Các endpoint nghiệp vụ chưa triển khai không xuất hiện trong Swagger.
+
+`SWAGGER_ENABLED=true` mặc định cho local. Đặt `SWAGGER_ENABLED=false` trong `.env` rồi recreate API để tắt cả UI và JSON khi triển khai môi trường khác. Docs là route public do Swagger đăng ký riêng; các Auth API vẫn giữ nguyên guard/RBAC.
+
+Swagger 11 tương thích NestJS 11; override `js-yaml` 5.4.3 để dùng bản đã vá của dependency được Swagger pin. Kiểm tra override khi nâng cấp Swagger.
+
 ## BE-02 — User và Role
 
 Migration `002_user_roles.sql` tạo `academy.users`, `academy.roles`, `academy.user_roles`. Migration `003_seed_roles.sql` seed `ADMIN`, `TEACHER`, `STUDENT` tự động khi chạy stack:

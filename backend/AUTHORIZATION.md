@@ -36,6 +36,7 @@ Quyền nghiệp vụ TEACHER trong tài liệu tham chiếu chưa được ch�
 | Route | Policy |
 |---|---|
 | GET /health | Public |
+| GET /docs, /docs-json và assets Swagger | Public khi SWAGGER_ENABLED không phải false; không phải controller nghiệp vụ |
 | POST /auth/login | Public; service kiểm tra password và trạng thái |
 | POST /auth/refresh | Public đối với Bearer; service bắt buộc refresh token hợp lệ |
 | POST /auth/logout | Public đối với Bearer; service dùng refresh token để thu hồi phiên |

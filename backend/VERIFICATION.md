@@ -69,3 +69,13 @@ Ngày kiểm tra: 12/10/2026.
 - Auth integration BE-004 vẫn pass sau khi đăng ký guard global.
 - Docker build/up --wait pass; API và DB healthy. Fixtures RBAC/auth được xóa sau test.
 - Không thêm endpoint nghiệp vụ giả lập vào production; catalog mô tả quyền cho module tiếp theo. TEACHER mặc định chỉ self:read vì quyền nghiệp vụ trong tài liệu chưa được chốt.
+
+## Swagger UI
+
+Ngày kiểm tra: 12/10/2026.
+
+- Swagger 11 tương thích NestJS 11, UI `/docs`, OpenAPI JSON `/docs-json`.
+- Test HTTP Swagger pass: UI và JSON 200, bearer security chỉ khai báo cho `/auth/me`, DTO login/refresh và schema success/error có meta/field-level errors.
+- Token không persist qua reload. `SWAGGER_ENABLED=false` tắt đăng ký UI/JSON.
+- Build pass; `npm test`: 4 tests pass. Audit runtime: 0 vulnerabilities sau override js-yaml 5.4.3.
+- Docker API/DB healthy; mở Swagger trong browser và dùng Try it out/Execute gọi GET /health thực tế trả 200 với DB up.
