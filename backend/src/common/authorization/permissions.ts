@@ -13,14 +13,30 @@ export const Permission = {
   OWN_ATTEMPTS_MANAGE: 'own-attempts:manage',
   OWN_PROGRESS_READ: 'own-progress:read',
   OWN_LISTENING_WRITE: 'own-listening:write',
+  TEACHERS_READ: 'teachers:read',
+  TEACHERS_MANAGE: 'teachers:manage',
+  CLASSES_READ: 'classes:read',
+  CLASSES_MANAGE: 'classes:manage',
+  CLASSES_MEMBERS_READ: 'classes:members:read',
+  CLASSES_MEMBERS_MANAGE: 'classes:members:manage',
+  EXAMS_READ: 'exams:read',
+  EXAMS_MANAGE: 'exams:manage',
 } as const;
 export type Permission = typeof Permission[keyof typeof Permission];
 
-// Explicit allowlists, no implicit role hierarchy. Teacher business scope is unapproved.
+// Explicit allowlists, no implicit role hierarchy. Resource ownership is checked in services.
 export const PERMISSION_ROLES: Readonly<Record<Permission, readonly Role[]>> = Object.freeze({
   [Permission.SELF_READ]: Object.freeze([Role.ADMIN, Role.TEACHER, Role.STUDENT]),
-  [Permission.STUDENTS_READ]: Object.freeze([Role.ADMIN]),
-  [Permission.STUDENTS_MANAGE]: Object.freeze([Role.ADMIN]),
+  [Permission.STUDENTS_READ]: Object.freeze([Role.ADMIN, Role.TEACHER]),
+  [Permission.STUDENTS_MANAGE]: Object.freeze([Role.ADMIN, Role.TEACHER]),
+  [Permission.TEACHERS_READ]: Object.freeze([Role.ADMIN, Role.TEACHER]),
+  [Permission.TEACHERS_MANAGE]: Object.freeze([Role.ADMIN, Role.TEACHER]),
+  [Permission.CLASSES_READ]: Object.freeze([Role.ADMIN, Role.TEACHER]),
+  [Permission.CLASSES_MANAGE]: Object.freeze([Role.ADMIN, Role.TEACHER]),
+  [Permission.CLASSES_MEMBERS_READ]: Object.freeze([Role.ADMIN, Role.TEACHER]),
+  [Permission.CLASSES_MEMBERS_MANAGE]: Object.freeze([Role.ADMIN, Role.TEACHER]),
+  [Permission.EXAMS_READ]: Object.freeze([Role.ADMIN, Role.TEACHER, Role.STUDENT]),
+  [Permission.EXAMS_MANAGE]: Object.freeze([Role.ADMIN, Role.TEACHER]),
   [Permission.CONTENT_READ]: Object.freeze([Role.ADMIN]),
   [Permission.CONTENT_MANAGE]: Object.freeze([Role.ADMIN]),
   [Permission.ASSIGNMENTS_MANAGE]: Object.freeze([Role.ADMIN]),

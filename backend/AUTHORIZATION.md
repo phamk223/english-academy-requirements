@@ -20,7 +20,12 @@
 | Permission | ADMIN | TEACHER | STUDENT | Phạm vi |
 |---|---|---|---|---|
 | self:read | Có | Có | Có | Chính tài khoản hiện tại |
-| students:read / students:manage | Có | Không | Không | Quản trị tài khoản học sinh |
+| students:read / students:manage | Có | Có | Không | Quản lý học sinh; Teacher chỉ thấy học sinh trong lớp được phân công |
+| teachers:read / teachers:manage | Có | Có | Không | Quản lý hồ sơ giáo viên |
+| classes:read / classes:manage | Có | Có | Không | Teacher chỉ thấy/sửa lớp được phân công; lớp mới tự phân công người tạo |
+| classes:members:read / classes:members:manage | Có | Có | Không | Thành viên giới hạn theo lớp được phân công |
+| exams:read | Có | Có | Có | Student chỉ xem đề đã publish |
+| exams:manage | Có | Có | Không | Teacher chỉ sửa đề do mình tạo |
 | content:read / content:manage | Có | Không | Không | Month/week/lesson/question/media quản trị |
 | assignments:manage | Có | Không | Không | Phân bài học |
 | reports:read | Có | Không | Không | Báo cáo trung tâm |
@@ -29,7 +34,7 @@
 | own-progress:read | Không | Không | Có | Tiến độ của mình |
 | own-listening:write | Không | Không | Có | Listening events của mình |
 
-Quyền nghiệp vụ TEACHER trong tài liệu tham chiếu chưa được chốt. Mặc định triển khai ở BE-005 chỉ cho TEACHER truy cập hồ sơ cá nhân; các quyền nghiệp vụ khác bị từ chối. `RequireRoles(TEACHER)` vẫn hỗ trợ cho route được phê duyệt sau này. Không tự cấp quyền xem toàn trung tâm hoặc quản lý nội dung cho Teacher.
+BE-006/007 xác định quyền Teacher trong các module quản lý và exams: quyền được cấp theo bảng trên, còn service kiểm tra assignment lớp hoặc quyền sở hữu đề. Các module nội dung/assignment/report vẫn chỉ cho ADMIN.
 
 ## Policy của route hiện có
 
@@ -44,7 +49,7 @@ Quyền nghiệp vụ TEACHER trong tài liệu tham chiếu chưa được ch�
 
 ## Route-level permission cho module chính
 
-Catalog typed nằm ở `src/common/authorization/route-policies.ts`. Các route nghiệp vụ dưới đây là contract cho module tiếp theo, chưa đăng ký thành endpoint trong BE-005. Dấu `*` mô tả nhóm route trong catalog, không phải matcher bảo mật.
+Catalog typed nằm ở `src/common/authorization/route-policies.ts`. Các route nghiệp vụ dưới đây là contract, không phải matcher bảo mật; controller thực tế gắn permission decorator.
 
 | Nhóm route | Method | Permission |
 |---|---|---|

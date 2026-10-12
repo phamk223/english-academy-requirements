@@ -79,3 +79,15 @@ Ngày kiểm tra: 12/10/2026.
 - Token không persist qua reload. `SWAGGER_ENABLED=false` tắt đăng ký UI/JSON.
 - Build pass; `npm test`: 4 tests pass. Audit runtime: 0 vulnerabilities sau override js-yaml 5.4.3.
 - Docker API/DB healthy; mở Swagger trong browser và dùng Try it out/Execute gọi GET /health thực tế trả 200 với DB up.
+
+## BE-006/BE-007 — Management và Exam Core
+
+Ngày kiểm tra: 13/10/2026.
+
+- Build TypeScript: pass.
+- Docker Compose build/up: PostgreSQL healthy, migration `007_management.sql` và `008_exam_core.sql` áp dụng thành công; API healthy.
+- `npm test`: 4/4 test regression hiện có pass (API contract, health/DB readiness, RBAC default-deny, Swagger).
+- `GET /health`: HTTP 200, `data.database = up`.
+- OpenAPI `/docs-json`: có các nhóm route students, teachers, classes và exams.
+- Khởi động Docker ban đầu phát hiện lỗi Swagger 404/409/422 và thiếu import DatabaseModule; đã sửa trước lần xác nhận healthy cuối.
+- Các endpoint nghiệp vụ mới được biên dịch và phát hiện trong OpenAPI. Chưa chạy fixture integration end-to-end cho CRUD, RBAC từng endpoint, duplicate membership và exam versioning.
