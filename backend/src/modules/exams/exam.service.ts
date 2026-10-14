@@ -14,10 +14,12 @@ function shape(row:ExamRow,user:CurrentUser){
   return {id:row.id,status:row.status,createdBy:row.created_by,createdAt:row.created_at,updatedAt:row.updated_at,publishedVersion,...(!isStudent?{draftVersion:row.draft_version_id?{id:row.draft_version_id,versionNumber:row.draft_version_number,title:row.draft_title,description:row.draft_description,sections:row.draft_sections,status:'DRAFT'}:null}:{})};
 }
 const selectSql=`SELECT e.id,e.status,e.created_by,e.created_at,e.updated_at,e.published_version_id,
-  pv.version_number AS published_version_number,pv.title AS published_title,pv.description AS published_description,pv.sections AS published_sections,pv.published_at,
-  dv.id AS draft_version_id,dv.version_number AS draft_version_number,dv.title AS draft_title,dv.description AS draft_description,dv.sections AS draft_sections
+  pv.version_number AS published_version_number,pv.title AS published_title,pv.description AS published_description,coalesce(ps.sections,pv.sections) AS published_sections,pv.published_at,
+  dv.id AS draft_version_id,dv.version_number AS draft_version_number,dv.title AS draft_title,dv.description AS draft_description,coalesce(ds.sections,dv.sections) AS draft_sections
   FROM academy.exams e LEFT JOIN academy.exam_versions pv ON pv.id=e.published_version_id
-  LEFT JOIN LATERAL (SELECT v.* FROM academy.exam_versions v WHERE v.exam_id=e.id AND v.status='DRAFT' ORDER BY v.version_number DESC LIMIT 1) dv ON true`;
+  LEFT JOIN LATERAL (SELECT v.* FROM academy.exam_versions v WHERE v.exam_id=e.id AND v.status='DRAFT' ORDER BY v.version_number DESC LIMIT 1) dv ON true
+  LEFT JOIN LATERAL (SELECT jsonb_agg(jsonb_build_object('id',s.id,'order',s.sort_order,'type',s.section_type,'config',s.config) ORDER BY s.sort_order,s.id) AS sections FROM academy.exam_sections s WHERE s.exam_version_id=pv.id) ps ON true
+  LEFT JOIN LATERAL (SELECT jsonb_agg(jsonb_build_object('id',s.id,'order',s.sort_order,'type',s.section_type,'config',s.config) ORDER BY s.sort_order,s.id) AS sections FROM academy.exam_sections s WHERE s.exam_version_id=dv.id) ds ON true`;
 function canManage(user:CurrentUser,owner:string){return user.roles.includes('ADMIN')||((user.roles.includes('TEACHER'))&&owner===user.id);}
 
 @Injectable()
@@ -31,8 +33,8 @@ export class ExamService{
       const exam=await client.query(`INSERT INTO academy.exams(status,created_by) VALUES('DRAFT',$1) RETURNING id`,[user.id]);
       const published=input.status==='PUBLISHED';
       const version=await client.query(`INSERT INTO academy.exam_versions(exam_id,version_number,title,description,sections,status,created_by,published_by,published_at)
-        VALUES($1,1,$2,$3,$4::jsonb,$5,$6,CASE WHEN $5='PUBLISHED' THEN $6 END,CASE WHEN $5='PUBLISHED' THEN now() END) RETURNING id`,
-        [exam.rows[0].id,input.title.trim(),input.description?.trim()??null,JSON.stringify(input.sections??[]),published?'PUBLISHED':'DRAFT',user.id]);
+        VALUES($1,1,$2,$3,$4::jsonb,$5,$6,$7,CASE WHEN $5='PUBLISHED' THEN now() END) RETURNING id`,
+        [exam.rows[0].id,input.title.trim(),input.description?.trim()??null,JSON.stringify(input.sections??[]),published?'PUBLISHED':'DRAFT',user.id,published?user.id:null]);
       if(published)await client.query(`UPDATE academy.exams SET status='PUBLISHED',published_version_id=$2 WHERE id=$1`,[exam.rows[0].id,version.rows[0].id]);
       await client.query('COMMIT');
       return this.get(user,exam.rows[0].id);

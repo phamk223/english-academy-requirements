@@ -10,6 +10,8 @@ BE-005: xem [AUTHORIZATION.md](./AUTHORIZATION.md) cho global RBAC guard, decora
 
 BE-006 và BE-007 bổ sung [Student/Teacher/Class management](./MANAGEMENT.md) và [Exam Core](./EXAMS.md). Các API đã hiển thị trong Swagger tại `/docs` và dùng envelope/pagination BE-003 cùng RBAC BE-005.
 
+BE-008/009 thêm [Exam Sections và Question Engine](./EXAM_CONTENT.md): bốn skill type dùng cùng engine, question/options/answer key được version hóa theo exam. Student nhận câu hỏi không kèm answer key.
+
 ## Test API bằng Swagger
 
 Mở [Swagger UI](http://localhost:3000/docs) sau khi chạy Docker. OpenAPI JSON ở [docs-json](http://localhost:3000/docs-json).

@@ -91,3 +91,12 @@ Ngày kiểm tra: 13/10/2026.
 - OpenAPI `/docs-json`: có các nhóm route students, teachers, classes và exams.
 - Khởi động Docker ban đầu phát hiện lỗi Swagger 404/409/422 và thiếu import DatabaseModule; đã sửa trước lần xác nhận healthy cuối.
 - Các endpoint nghiệp vụ mới được biên dịch và phát hiện trong OpenAPI. Chưa chạy fixture integration end-to-end cho CRUD, RBAC từng endpoint, duplicate membership và exam versioning.
+
+## BE-008/BE-009 — Exam Sections và Question Engine
+
+Ngày kiểm tra: 14/10/2026.
+
+- Build TypeScript pass; migration `009_exam_sections_questions.sql` áp dụng thành công trên PostgreSQL Docker; API/DB healthy.
+- `test/exam-content.integration.cjs` pass với PostgreSQL/JWT thật: question type validation, pagination, reorder không mất dữ liệu, Student bị ẩn draft/answer key, Admin đọc answer key, attempt tiếp tục tham chiếu version cũ sau khi publish version mới, xóa section dọn child data trong draft.
+- Tất cả route section/question có trong Swagger và dùng permission EXAMS_READ/EXAMS_MANAGE.
+- Bản published không bị sửa; delete content chỉ tác động version draft. FK attempt tiếp tục bảo vệ exam version cũ.
