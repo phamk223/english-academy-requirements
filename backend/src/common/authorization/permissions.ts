@@ -21,6 +21,9 @@ export const Permission = {
   CLASSES_MEMBERS_MANAGE: 'classes:members:manage',
   EXAMS_READ: 'exams:read',
   EXAMS_MANAGE: 'exams:manage',
+  MEDIA_READ: 'media:read',
+  MEDIA_MANAGE: 'media:manage',
+  ASSIGNMENTS_READ: 'assignments:read',
 } as const;
 export type Permission = typeof Permission[keyof typeof Permission];
 
@@ -37,9 +40,12 @@ export const PERMISSION_ROLES: Readonly<Record<Permission, readonly Role[]>> = O
   [Permission.CLASSES_MEMBERS_MANAGE]: Object.freeze([Role.ADMIN, Role.TEACHER]),
   [Permission.EXAMS_READ]: Object.freeze([Role.ADMIN, Role.TEACHER, Role.STUDENT]),
   [Permission.EXAMS_MANAGE]: Object.freeze([Role.ADMIN, Role.TEACHER]),
+  [Permission.MEDIA_READ]: Object.freeze([Role.ADMIN, Role.TEACHER, Role.STUDENT]),
+  [Permission.MEDIA_MANAGE]: Object.freeze([Role.ADMIN, Role.TEACHER]),
+  [Permission.ASSIGNMENTS_READ]: Object.freeze([Role.ADMIN, Role.TEACHER, Role.STUDENT]),
   [Permission.CONTENT_READ]: Object.freeze([Role.ADMIN]),
   [Permission.CONTENT_MANAGE]: Object.freeze([Role.ADMIN]),
-  [Permission.ASSIGNMENTS_MANAGE]: Object.freeze([Role.ADMIN]),
+  [Permission.ASSIGNMENTS_MANAGE]: Object.freeze([Role.ADMIN, Role.TEACHER]),
   [Permission.REPORTS_READ]: Object.freeze([Role.ADMIN]),
   [Permission.ASSIGNED_LESSONS_READ]: Object.freeze([Role.STUDENT]),
   [Permission.OWN_ATTEMPTS_MANAGE]: Object.freeze([Role.STUDENT]),

@@ -14,6 +14,7 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
 COPY scripts ./scripts
 COPY migrations ./migrations
+RUN mkdir -p /app/media/objects /app/media/.staging && chown -R node:node /app/media
 USER node
 EXPOSE 3000
 CMD ["node", "dist/main.js"]

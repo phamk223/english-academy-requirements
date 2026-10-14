@@ -92,11 +92,14 @@ Ngày kiểm tra: 13/10/2026.
 - Khởi động Docker ban đầu phát hiện lỗi Swagger 404/409/422 và thiếu import DatabaseModule; đã sửa trước lần xác nhận healthy cuối.
 - Các endpoint nghiệp vụ mới được biên dịch và phát hiện trong OpenAPI. Chưa chạy fixture integration end-to-end cho CRUD, RBAC từng endpoint, duplicate membership và exam versioning.
 
-## BE-008/BE-009 — Exam Sections và Question Engine
+## BE-010/011 — Media Upload và Assignment
 
 Ngày kiểm tra: 14/10/2026.
 
-- Build TypeScript pass; migration `009_exam_sections_questions.sql` áp dụng thành công trên PostgreSQL Docker; API/DB healthy.
-- `test/exam-content.integration.cjs` pass với PostgreSQL/JWT thật: question type validation, pagination, reorder không mất dữ liệu, Student bị ẩn draft/answer key, Admin đọc answer key, attempt tiếp tục tham chiếu version cũ sau khi publish version mới, xóa section dọn child data trong draft.
-- Tất cả route section/question có trong Swagger và dùng permission EXAMS_READ/EXAMS_MANAGE.
-- Bản published không bị sửa; delete content chỉ tác động version draft. FK attempt tiếp tục bảo vệ exam version cũ.
+- `npm run build`: pass; `npm test`: 4/4 regression tests pass.
+- Docker Compose build/up --wait: migration `010_media_assignments.sql` áp dụng; PostgreSQL và API healthy. `/health` và `/docs-json` trả HTTP 200.
+- `test/media-assignment.integration.cjs` chạy với PostgreSQL thật: MIME giả bị từ chối 415, file vượt 20 MiB trả 413 theo error contract, PNG upload lưu object và metadata, media gắn đúng exam section và được giữ trong published snapshot.
+- Student không thể xem assignment của user khác; Teacher chỉ thấy assignment qua lớp được phân công hoặc đề do chính họ tạo. Direct assignment trùng trả 409; assignment trực tiếp cùng assignment qua class được gộp thành một item có cả hai source.
+- Student chỉ stream media của đề published đã giao; xóa media đang được một exam version tham chiếu trả 409. Fixture được dọn sau test.
+- Object file đặt ở Docker volume `media_data`, API container vẫn filesystem read-only ngoài volume được mount. Không ghi binary trong PostgreSQL.
+- Swagger JSON có `/media/upload`, attachment/content/delete và các route assignment. Hướng dẫn dùng ở [MEDIA_ASSIGNMENTS.md](./MEDIA_ASSIGNMENTS.md).
