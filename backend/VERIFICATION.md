@@ -103,3 +103,16 @@ Ngày kiểm tra: 14/10/2026.
 - Student chỉ stream media của đề published đã giao; xóa media đang được một exam version tham chiếu trả 409. Fixture được dọn sau test.
 - Object file đặt ở Docker volume `media_data`, API container vẫn filesystem read-only ngoài volume được mount. Không ghi binary trong PostgreSQL.
 - Swagger JSON có `/media/upload`, attachment/content/delete và các route assignment. Hướng dẫn dùng ở [MEDIA_ASSIGNMENTS.md](./MEDIA_ASSIGNMENTS.md).
+
+## BE-012/013 — Attempt Lifecycle và Scoring Engine
+
+Ngày kiểm tra: 14/10/2026.
+
+- TypeScript build pass; `npm test`: 5/5 tests pass, gồm scoring đúng/sai, thiếu đáp án và manual grading.
+- Migration `011_attempt_scoring.sql` áp dụng thành công trên PostgreSQL thật; Docker API/DB healthy.
+- Integration `test/attempt-scoring.integration.cjs`: pass. Start đồng thời trả cùng attempt; chỉ Student sở hữu được lưu/nộp, student khác 404, thiếu token 401, Admin không sửa qua endpoint Student.
+- Request gửi score trực tiếp, trong answer hoặc trong submit bị từ chối. Bài dùng đáp án đã lưu và AnswerKey của version lúc bắt đầu; publish key mới không thay đổi điểm bài cũ.
+- Năm type objective đúng được tổng 5 điểm; Writing đánh dấu NEEDS_MANUAL_GRADING, attempt SUBMITTED và tổng maxScore 6. Bản objective-only không có đáp án nhận 0/5, state GRADED.
+- Submit đồng thời/idempotent không tính lặp; lưu sau submit trả 409. Response snapshot không có answerKey.
+- Integration exam-content và media-assignment vẫn pass sau thay đổi schema/FK và truy cập media theo version attempt.
+- OpenAPI có đủ bốn route attempt; POST start mô tả 201. Hướng dẫn/chính sách scoring, retake và deadline ở [ATTEMPTS.md](./ATTEMPTS.md).

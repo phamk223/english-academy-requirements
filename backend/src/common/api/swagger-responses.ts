@@ -22,10 +22,10 @@ export class ErrorEnvelopeDto {
   @ApiProperty({ type: MetaDto }) meta!: MetaDto;
 }
 
-export function ApiSuccess(data: Type<unknown> | null, description = 'Success') {
+export function ApiSuccess(data: Type<unknown> | null, description = 'Success', status = 200) {
   return applyDecorators(
     ApiExtraModels(MetaDto, ...(data ? [data] : [])),
-    ApiResponse({ status: 200, description, schema: {
+    ApiResponse({ status, description, schema: {
       type: 'object', required: ['success', 'data', 'meta'], properties: {
         success: { type: 'boolean', enum: [true] },
         data: data ? { $ref: getSchemaPath(data) } : { type: 'object', nullable: true, example: null },

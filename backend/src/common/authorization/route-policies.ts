@@ -11,6 +11,10 @@ export interface RoutePermission {
 // Contract for future controllers, not route registration or a URL-based security matcher.
 // Actual controllers must use @RequirePermission() and enforce resource scope in services.
 export const ROUTE_PERMISSIONS: readonly RoutePermission[] = [
+  { module: 'attempts', methods: ['POST'], path: '/exams/:id/attempts', permission: Permission.OWN_ATTEMPTS_MANAGE, resourceScope: 'self' },
+  { module: 'attempts', methods: ['GET'], path: '/attempts/:id', permission: Permission.ATTEMPTS_READ, resourceScope: 'self' },
+  { module: 'attempts', methods: ['PATCH'], path: '/attempts/:id/answers', permission: Permission.OWN_ATTEMPTS_MANAGE, resourceScope: 'self' },
+  { module: 'attempts', methods: ['POST'], path: '/attempts/:id/submit', permission: Permission.OWN_ATTEMPTS_MANAGE, resourceScope: 'self' },
   { module: 'auth', methods: ['GET'], path: '/auth/me', permission: Permission.SELF_READ, resourceScope: 'self' },
   { module: 'students', methods: ['GET'], path: '/students', permission: Permission.STUDENTS_READ, resourceScope: 'center' },
   { module: 'students', methods: ['GET'], path: '/students/:id', permission: Permission.STUDENTS_READ, resourceScope: 'center' },

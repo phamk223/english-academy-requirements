@@ -11,6 +11,7 @@ BE-005: xem [AUTHORIZATION.md](./AUTHORIZATION.md) cho global RBAC guard, decora
 BE-006 và BE-007 bổ sung [Student/Teacher/Class management](./MANAGEMENT.md) và [Exam Core](./EXAMS.md). Các API đã hiển thị trong Swagger tại `/docs` và dùng envelope/pagination BE-003 cùng RBAC BE-005.
 
 BE-010/011 bổ sung upload media và assignment; xem [MEDIA_ASSIGNMENTS.md](./MEDIA_ASSIGNMENTS.md) để biết giới hạn file, quyền truy cập, routes và cách thử trên Swagger.
+BE-012/013 bổ sung [Attempt lifecycle và scoring](./ATTEMPTS.md): bắt đầu bài theo snapshot đề, lưu đáp án, nộp và chấm objective ở backend.
 
 ## Test API bằng Swagger
 
