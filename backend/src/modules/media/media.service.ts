@@ -13,10 +13,11 @@ const MIME_TYPE: Record<string, 'AUDIO' | 'IMAGE' | 'DOCUMENT'> = {
   'image/png':'IMAGE','image/jpeg':'IMAGE','image/webp':'IMAGE',
   'application/pdf':'DOCUMENT','text/plain':'DOCUMENT','application/vnd.openxmlformats-officedocument.wordprocessingml.document':'DOCUMENT',
 };
-const root = process.env.MEDIA_STORAGE_PATH ?? join(process.cwd(), 'var', 'media');
+export const mediaRoot = process.env.MEDIA_STORAGE_PATH ?? join(process.cwd(), 'var', 'media');
+const root=mediaRoot;
 type Target = { sectionId?: string; questionId?: string };
 
-function validBytes(mime: string, b: Buffer): boolean {
+export function validBytes(mime: string, b: Buffer): boolean {
   if (mime === 'image/png') return b.length >= 8 && b.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]));
   if (mime === 'image/jpeg') return b.length >= 3 && b[0]===255 && b[1]===216 && b[2]===255;
   if (mime === 'image/webp') return b.length >= 12 && b.toString('ascii',0,4)==='RIFF' && b.toString('ascii',8,12)==='WEBP';
@@ -55,7 +56,7 @@ export class MediaService {
     });return media;}catch(error){await unlink(temp).catch(()=>{});await unlink(finalPath).catch(()=>{});throw error;}
   }
 
-  async attachExisting(user:CurrentUser,id:string,target:AttachMediaDto){return this.transaction(async c=>{const media=await c.query('SELECT id FROM academy.media WHERE id=$1',[id]);if(!media.rowCount)throw new NotFoundException('Resource not found');await this.attach(c,user,id,target);return {mediaId:id,...target};});}
+  async attachExisting(user:CurrentUser,id:string,target:AttachMediaDto){return this.transaction(async c=>{const media=await c.query('SELECT id FROM academy.media WHERE id=$1 AND (created_by=$2 OR $3::boolean)',[id,user.id,user.roles.includes('ADMIN')]);if(!media.rowCount)throw new NotFoundException('Resource not found');await this.attach(c,user,id,target);return {mediaId:id,...target};});}
 
   private async attach(c:PoolClient,user:CurrentUser,mediaId:string,target:Target){
     if(Boolean(target.sectionId)===Boolean(target.questionId))throw new BadRequestException('Exactly one of sectionId or questionId is required');

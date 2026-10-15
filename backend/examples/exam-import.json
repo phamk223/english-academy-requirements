@@ -1,0 +1,18 @@
+{
+  "title": "English review quiz",
+  "description": "Teacher must review before publishing",
+  "sections": [
+    {
+      "type": "READING",
+      "config": { "instructions": "Choose the correct answer." },
+      "questions": [
+        {
+          "type": "CHOOSE_CORRECT",
+          "prompt": "She ___ English every day.",
+          "options": [ { "content": "study" }, { "content": "studies" } ],
+          "answerKey": { "correctOptionIndexes": [1] }
+        }
+      ]
+    }
+  ]
+}

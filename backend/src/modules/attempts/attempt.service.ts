@@ -4,6 +4,7 @@ import { DatabaseService } from '../../database/database.service';
 import { CurrentUser } from '../auth/auth.service';
 import { SaveAttemptAnswersDto } from './attempt.dto';
 import { ScoringService } from './scoring.service';
+import { studentSectionConfig } from '../../common/api/student-view';
 
 @Injectable()
 export class AttemptService {
@@ -24,6 +25,7 @@ export class AttemptService {
     const sections=(await c.query(`SELECT s.id,s.section_type AS type,s.sort_order AS "order",s.config,
       coalesce((SELECT jsonb_agg(jsonb_build_object('id',m.id,'type',m.type,'url','/media/'||m.id||'/content') ORDER BY m.id) FROM academy.exam_media_attachments ma JOIN academy.media m ON m.id=ma.media_id WHERE ma.section_id=s.id AND ma.exam_version_id=s.exam_version_id),'[]'::jsonb) AS media FROM academy.exam_sections s WHERE s.exam_version_id=$1 ORDER BY s.sort_order,s.id`,[a.exam_version_id])).rows;
     const questions=await this.questions(c,a.exam_version_id);
+    for(const section of sections)section.config=studentSectionConfig(section.config??{});
     const answers=(await c.query(`SELECT question_id AS "questionId",answer,score,max_score AS "maxScore",grading_status AS "gradingStatus",updated_at AS "updatedAt" FROM academy.attempt_answers WHERE attempt_id=$1 ORDER BY question_id`,[a.id])).rows;
     return{id:a.id,examId:a.exam_id,examVersionId:a.exam_version_id,studentId:a.student_id,status:a.status,startedAt:a.started_at,submittedAt:a.submitted_at,gradedAt:a.graded_at,score:a.score,maxScore:a.max_score,gradingStatus:a.grading_status,exam:{id:version.id,versionNumber:version.version_number,title:version.title,description:version.description,sections:sections.map(s=>({...s,questions:questions.filter(q=>q.section_id===s.id).map(q=>({id:q.id,type:q.question_type,order:q.sort_order,prompt:q.prompt,content:q.content,options:q.options,media:q.media}))}))},answers};
   }
@@ -51,6 +53,7 @@ export class AttemptService {
   async submit(user:CurrentUser,id:string){return this.transaction(async c=>{
     const a=await this.row(c,user,id,true);if(['SUBMITTED','GRADED'].includes(a.status))return this.shape(c,a);
     if(a.status!=='IN_PROGRESS')throw new ConflictException('Attempt has not started');
+    await c.query(`UPDATE academy.listening_sessions SET ended_at=clock_timestamp(),playing=false WHERE attempt_id=$1 AND ended_at IS NULL`,[id]);
     const questions=await this.questions(c,a.exam_version_id);const saved=(await c.query('SELECT question_id,answer FROM academy.attempt_answers WHERE attempt_id=$1',[id])).rows;let score=0,maxScore=0,manual=false;
     for(const q of questions){const answer=saved.find(x=>x.question_id===q.id)?.answer??{};const result=this.scoring.grade(q.question_type,q.section_type,answer,q.answer_key,q.options.map((o:any)=>o.id));score+=result.score;maxScore+=result.maxScore;manual ||= result.gradingStatus==='NEEDS_MANUAL_GRADING';
       await c.query(`INSERT INTO academy.attempt_answers(attempt_id,exam_version_id,question_id,answer,score,max_score,grading_status) VALUES($1,$2,$3,$4::jsonb,$5,$6,$7) ON CONFLICT(attempt_id,question_id) DO UPDATE SET score=excluded.score,max_score=excluded.max_score,grading_status=excluded.grading_status`,[id,a.exam_version_id,q.id,JSON.stringify(answer),result.score,result.maxScore,result.gradingStatus]);

@@ -9,7 +9,7 @@ type VersionRow={exam_id:string;status:string;created_by:string;published_versio
 const ownerCanManage=(user:CurrentUser,owner:string)=>user.roles.includes('ADMIN')||(user.roles.includes('TEACHER')&&user.id===owner);
 const studentOnly=(user:CurrentUser)=>user.roles.includes('STUDENT')&&!user.roles.some(role=>role==='ADMIN'||role==='TEACHER');
 const missing=()=>new NotFoundException('Resource not found');
-function validateAnswer(type:string,options:string[],key:Record<string,unknown>){
+export function validateAnswer(type:string,options:string[],key:Record<string,unknown>){
   const optionTypes=['MULTIPLE_CHOICE','CHOOSE_CORRECT'];
   if(optionTypes.includes(type)){
     if(options.length<2)throw new BadRequestException('This question type requires at least two options');

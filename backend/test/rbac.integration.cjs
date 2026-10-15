@@ -97,7 +97,8 @@ test('global RBAC enforces DB-backed roles, method overrides, 401/403 and defaul
     assert.equal(await get('/rbac-fixture/public', 'invalid.jwt.token'), 200);
     assert.equal(await get('/health'), 200);
     assert.equal(await get('/rbac-fixture/reports', admin), 200);
-    assert.equal(await get('/rbac-fixture/reports', teacher), 403);
+    // BE-016 permits Teacher reports; production service separately enforces resource scope.
+    assert.equal(await get('/rbac-fixture/reports', teacher), 200);
     assert.equal(await get('/rbac-fixture/reports', student), 403);
     assert.equal(await get('/rbac-fixture/learning', student), 200);
     assert.equal(await get('/rbac-fixture/learning', admin), 403);

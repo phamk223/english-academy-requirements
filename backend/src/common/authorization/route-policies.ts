@@ -11,6 +11,16 @@ export interface RoutePermission {
 // Contract for future controllers, not route registration or a URL-based security matcher.
 // Actual controllers must use @RequirePermission() and enforce resource scope in services.
 export const ROUTE_PERMISSIONS: readonly RoutePermission[] = [
+  { module:'listening',methods:['POST'],path:'/listening/sessions',permission:Permission.OWN_LISTENING_WRITE,resourceScope:'self' },
+  { module:'listening',methods:['POST'],path:'/listening/sessions/:id/events',permission:Permission.OWN_LISTENING_WRITE,resourceScope:'self' },
+  { module:'listening',methods:['POST'],path:'/listening/sessions/:id/end',permission:Permission.OWN_LISTENING_WRITE,resourceScope:'self' },
+  { module:'exam-imports',methods:['POST'],path:'/exam-imports',permission:Permission.IMPORTS_MANAGE,resourceScope:'self' },
+  { module:'exam-imports',methods:['GET'],path:'/exam-imports/:id',permission:Permission.IMPORTS_MANAGE,resourceScope:'self' },
+  { module:'exam-imports',methods:['POST'],path:'/exam-imports/:id/review',permission:Permission.IMPORTS_MANAGE,resourceScope:'self' },
+  { module:'reports',methods:['GET'],path:'/reports/students',permission:Permission.REPORTS_READ,resourceScope:'assigned' },
+  { module:'reports',methods:['GET'],path:'/reports/classes',permission:Permission.REPORTS_READ,resourceScope:'assigned' },
+  { module:'reports',methods:['GET'],path:'/reports/exams',permission:Permission.REPORTS_READ,resourceScope:'assigned' },
+  { module:'reports',methods:['GET'],path:'/reports/listening',permission:Permission.REPORTS_READ,resourceScope:'assigned' },
   { module: 'attempts', methods: ['POST'], path: '/exams/:id/attempts', permission: Permission.OWN_ATTEMPTS_MANAGE, resourceScope: 'self' },
   { module: 'attempts', methods: ['GET'], path: '/attempts/:id', permission: Permission.ATTEMPTS_READ, resourceScope: 'self' },
   { module: 'attempts', methods: ['PATCH'], path: '/attempts/:id/answers', permission: Permission.OWN_ATTEMPTS_MANAGE, resourceScope: 'self' },
@@ -41,16 +51,9 @@ export const ROUTE_PERMISSIONS: readonly RoutePermission[] = [
   { module: 'assignments', methods: ['POST'], path: '/exams/:id/assignments', permission: Permission.ASSIGNMENTS_MANAGE, resourceScope: 'self' },
   { module: 'assignments', methods: ['GET'], path: '/students/me/assignments', permission: Permission.ASSIGNMENTS_READ, resourceScope: 'self' },
   { module: 'assignments', methods: ['GET'], path: '/students/:id/assignments', permission: Permission.ASSIGNMENTS_READ, resourceScope: 'assigned' },
-  { module: 'assignments', methods: ['GET'], path: '/students/:id/assignments', permission: Permission.ASSIGNMENTS_READ, resourceScope: 'assigned' },
   { module: 'content', methods: ['GET'], path: '/api/v1/admin/content/*', permission: Permission.CONTENT_READ, resourceScope: 'center' },
   { module: 'content', methods: ['POST', 'PATCH', 'DELETE'], path: '/api/v1/admin/content/*', permission: Permission.CONTENT_MANAGE, resourceScope: 'center' },
-  { module: 'assignments', methods: ['POST'], path: '/api/v1/admin/assignments', permission: Permission.ASSIGNMENTS_MANAGE, resourceScope: 'center' },
-  { module: 'assignments', methods: ['PATCH', 'DELETE'], path: '/api/v1/admin/assignments/:id', permission: Permission.ASSIGNMENTS_MANAGE, resourceScope: 'center' },
-  { module: 'reports', methods: ['GET'], path: '/api/v1/admin/reports/*', permission: Permission.REPORTS_READ, resourceScope: 'center' },
   { module: 'learning', methods: ['GET'], path: '/api/v1/me/lessons', permission: Permission.ASSIGNED_LESSONS_READ, resourceScope: 'assigned' },
   { module: 'learning', methods: ['GET'], path: '/api/v1/me/lessons/:id', permission: Permission.ASSIGNED_LESSONS_READ, resourceScope: 'assigned' },
-  { module: 'attempts', methods: ['POST'], path: '/api/v1/me/attempts', permission: Permission.OWN_ATTEMPTS_MANAGE, resourceScope: 'self' },
-  { module: 'attempts', methods: ['PATCH'], path: '/api/v1/me/attempts/:id', permission: Permission.OWN_ATTEMPTS_MANAGE, resourceScope: 'self' },
   { module: 'progress', methods: ['GET'], path: '/api/v1/me/progress', permission: Permission.OWN_PROGRESS_READ, resourceScope: 'self' },
-  { module: 'listening', methods: ['POST'], path: '/api/v1/me/listening-events', permission: Permission.OWN_LISTENING_WRITE, resourceScope: 'self' },
 ];

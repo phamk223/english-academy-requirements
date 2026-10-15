@@ -12,6 +12,7 @@ BE-006 và BE-007 bổ sung [Student/Teacher/Class management](./MANAGEMENT.md) 
 
 BE-010/011 bổ sung upload media và assignment; xem [MEDIA_ASSIGNMENTS.md](./MEDIA_ASSIGNMENTS.md) để biết giới hạn file, quyền truy cập, routes và cách thử trên Swagger.
 BE-012/013 bổ sung [Attempt lifecycle và scoring](./ATTEMPTS.md): bắt đầu bài theo snapshot đề, lưu đáp án, nộp và chấm objective ở backend.
+BE-014/015/016 bổ sung [Listening, async file import và reports](./LISTENING_IMPORT_REPORTS.md). BE-017 có [deploy staging, audit/logging và backup/rollback](./STAGING.md). Compose chạy thêm import worker; source audio/ảnh không tự OCR/STT ở MVP.
 
 ## Test API bằng Swagger
 

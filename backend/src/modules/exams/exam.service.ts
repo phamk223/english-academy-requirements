@@ -4,6 +4,7 @@ import { paginate, PaginatedResult } from '../../common/api/contract';
 import { DatabaseService } from '../../database/database.service';
 import { CurrentUser } from '../auth/auth.service';
 import { CreateExamDto, ExamListQueryDto, UpdateExamDto } from './exam.dto';
+import { studentSectionConfig } from '../../common/api/student-view';
 
 type PgFailure=Error&{code?:string};
 function conflict(error:unknown):never{if((error as PgFailure)?.code==='23505')throw new ConflictException('Resource already exists');throw error;}
@@ -11,6 +12,7 @@ type ExamRow={id:string;status:string;created_by:string;created_at:Date;updated_
 function shape(row:ExamRow,user:CurrentUser){
   const publishedVersion=row.published_version_id?{id:row.published_version_id,versionNumber:row.published_version_number,title:row.published_title,description:row.published_description,sections:row.published_sections,status:'PUBLISHED',publishedAt:row.published_at}:null;
   const isStudent=user.roles.includes('STUDENT')&&!user.roles.some(r=>r==='ADMIN'||r==='TEACHER');
+  if(isStudent&&publishedVersion&&Array.isArray(publishedVersion.sections))publishedVersion.sections=publishedVersion.sections.map(s=>({...s,config:studentSectionConfig(s.config??{})}));
   return {id:row.id,status:row.status,createdBy:row.created_by,createdAt:row.created_at,updatedAt:row.updated_at,publishedVersion,...(!isStudent?{draftVersion:row.draft_version_id?{id:row.draft_version_id,versionNumber:row.draft_version_number,title:row.draft_title,description:row.draft_description,sections:row.draft_sections,status:'DRAFT'}:null}:{})};
 }
 const selectSql=`SELECT e.id,e.status,e.created_by,e.created_at,e.updated_at,e.published_version_id,

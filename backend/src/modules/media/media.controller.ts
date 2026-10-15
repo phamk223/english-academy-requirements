@@ -16,7 +16,7 @@ export class MediaController {
   constructor(@Inject(MediaService) private readonly media:MediaService){}
 
   @Post('upload') @RequirePermission(Permission.MEDIA_MANAGE)
-  @UseInterceptors(FileInterceptor('file',{limits:{fileSize:20*1024*1024,files:1}}))
+  @UseInterceptors(FileInterceptor('file',{limits:{fileSize:20*1024*1024,files:1,fields:3,fieldSize:8192}}))
   @ApiOperation({summary:'Upload audio, image or document to persistent object storage'}) @ApiConsumes('multipart/form-data')
   @ApiBody({schema:{type:'object',required:['file'],properties:{file:{type:'string',format:'binary'},sectionId:{type:'string',format:'uuid'},questionId:{type:'string',format:'uuid'},durationSeconds:{type:'integer',minimum:1,maximum:86400}}}})
   @ApiSuccess(null) @ApiErrors(400,401,403,409,413,415)

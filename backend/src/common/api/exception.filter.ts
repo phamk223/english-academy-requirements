@@ -34,8 +34,9 @@ export class ApiExceptionFilter implements ExceptionFilter {
     if (parserError?.type === 'entity.too.large' && parserError.status === 413) status = 413;
     if (parserError?.type === 'charset.unsupported' && parserError.status === 415) status = 415;
     const uploadError=exception as {code?:unknown}|null;
+    if(uploadError?.code==='23503'||uploadError?.code==='23505')status=409;
     if(uploadError?.code==='LIMIT_FILE_SIZE')status=413;
-    if(uploadError?.code==='LIMIT_FILE_COUNT'||uploadError?.code==='LIMIT_UNEXPECTED_FILE')status=400;
+    if(typeof uploadError?.code==='string'&&uploadError.code.startsWith('LIMIT_')&&uploadError.code!=='LIMIT_FILE_SIZE')status=400;
     if (!Number.isInteger(status) || status < 400 || status > 599) status = 500;
     let [code, message] = errors[status] ?? (status >= 500
       ? ['INTERNAL_SERVER_ERROR', 'Internal server error'] : ['REQUEST_FAILED', 'Request failed']);
@@ -50,7 +51,9 @@ export class ApiExceptionFilter implements ExceptionFilter {
     };
     if (status >= 500) {
       // Deliberately exclude exception payloads and request bodies from logs.
-      this.logger.error(`Request failed: requestId=${body.meta.requestId} status=${status}`);
+      const errorType=exception instanceof Error?exception.constructor.name:'UnknownError';
+      const candidate=(exception as {code?:unknown}|null)?.code;
+      this.logger.error(JSON.stringify({event:'http_error',requestId:body.meta.requestId,status,errorType:/^[A-Za-z0-9_]{1,80}$/.test(errorType)?errorType:'UnknownError',errorCode:typeof candidate==='string'&&/^[0-9A-Z]{5}$/.test(candidate)?candidate:null}));
     }
     response.setHeader('Cache-Control', 'no-store');
     response.status(status).json(body);

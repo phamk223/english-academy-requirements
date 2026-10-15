@@ -53,6 +53,40 @@ services:
       start_period: 10s
     init: true
     read_only: true
+    mem_limit: 512m
+    pids_limit: 128
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    restart: unless-stopped
+  worker:
+    build: .
+    command: ["node", "dist/modules/imports/import-worker.js"]
+    environment:
+      NODE_ENV: production
+      MEDIA_STORAGE_PATH: /app/media
+      PGHOST: db
+      PGDATABASE: ${POSTGRES_DB}
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - media_data:/app/media
+    tmpfs:
+      - /tmp:size=64m,noexec,nosuid
+    init: true
+    read_only: true
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 64
+    stop_grace_period: 45s
+    healthcheck:
+      test: ["CMD", "node", "-e", "try{process.exit(Date.now()-require('fs').statSync('/tmp/import-worker-heartbeat').mtimeMs<90000?0:1)}catch{process.exit(1)}"]
+      interval: 15s
+      timeout: 5s
+      start_period: 45s
+      retries: 3
     security_opt: ["no-new-privileges:true"]
     cap_drop: ["ALL"]
     restart: unless-stopped

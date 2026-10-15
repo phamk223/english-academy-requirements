@@ -20,21 +20,25 @@
 | Permission | ADMIN | TEACHER | STUDENT | Phạm vi |
 |---|---|---|---|---|
 | self:read | Có | Có | Có | Chính tài khoản hiện tại |
-| students:read / students:manage | Có | Có | Không | Quản lý học sinh; Teacher chỉ thấy học sinh trong lớp được phân công |
+| students:read / students:manage | Có | Có | Không | Quản lý học sinh toàn trung tâm theo quyền đã cấp ở BE-006 |
 | teachers:read / teachers:manage | Có | Có | Không | Quản lý hồ sơ giáo viên |
 | classes:read / classes:manage | Có | Có | Không | Teacher chỉ thấy/sửa lớp được phân công; lớp mới tự phân công người tạo |
 | classes:members:read / classes:members:manage | Có | Có | Không | Thành viên giới hạn theo lớp được phân công |
 | exams:read | Có | Có | Có | Student chỉ xem đề đã publish |
 | exams:manage | Có | Có | Không | Teacher chỉ sửa đề do mình tạo |
 | content:read / content:manage | Có | Không | Không | Month/week/lesson/question/media quản trị |
-| assignments:manage | Có | Không | Không | Phân bài học |
-| reports:read | Có | Không | Không | Báo cáo trung tâm |
+| assignments:manage | Có | Có | Không | Teacher giao đề do mình tạo; gán class cần được phân công |
+| assignments:read | Có | Có | Có | Student tự xem; Teacher giới hạn theo đề/lớp được phân công |
+| media:read / media:manage | Có | Có | Read | Student đọc media theo assignment/attempt; Teacher quản lý media mình upload |
+| imports:manage | Có | Có | Không | Import của chính mình; Admin xem mọi job |
+| attempts:read | Có | Có | Có | Student own; Teacher sở hữu đề; Admin toàn trung tâm |
+| reports:read | Có | Có | Không | Teacher theo đề sở hữu hoặc học sinh/lớp được phân công |
 | assigned-lessons:read | Không | Không | Có | Bài học được phân |
 | own-attempts:manage | Không | Không | Có | Bài làm của mình |
 | own-progress:read | Không | Không | Có | Tiến độ của mình |
 | own-listening:write | Không | Không | Có | Listening events của mình |
 
-BE-006/007 xác định quyền Teacher trong các module quản lý và exams: quyền được cấp theo bảng trên, còn service kiểm tra assignment lớp hoặc quyền sở hữu đề. Các module nội dung/assignment/report vẫn chỉ cho ADMIN.
+Các module hiện có khai báo quyền ở controller; service áp dụng ownership và class assignment. Xem thêm contract BE-014/015/016 ở LISTENING_IMPORT_REPORTS.md. Permission content:* chỉ là dự kiến cho module nội dung quản trị, chưa đăng ký API tương ứng.
 
 ## Policy của route hiện có
 
@@ -53,21 +57,22 @@ Catalog typed nằm ở `src/common/authorization/route-policies.ts`. Các route
 
 | Nhóm route | Method | Permission |
 |---|---|---|
-| /api/v1/admin/students và /:id | GET | students:read |
-| /api/v1/admin/students | POST | students:manage |
-| /api/v1/admin/students/:id, /:id/password, /:id/status | PATCH | students:manage |
-| /api/v1/admin/content/* | GET | content:read |
-| /api/v1/admin/content/* | POST/PATCH/DELETE | content:manage |
-| /api/v1/admin/assignments | POST | assignments:manage |
-| /api/v1/admin/assignments/:id | PATCH/DELETE | assignments:manage |
-| /api/v1/admin/reports/* | GET | reports:read |
-| /api/v1/me/lessons và /:id | GET | assigned-lessons:read |
-| /api/v1/me/attempts | POST | own-attempts:manage |
-| /api/v1/me/attempts/:id | PATCH | own-attempts:manage |
-| /api/v1/me/progress | GET | own-progress:read |
-| /api/v1/me/listening-events | POST | own-listening:write |
+| /students và /:id | GET | students:read |
+| /students | POST | students:manage |
+| /students/:id, /:id/status | PATCH | students:manage |
+| /students/:id/reset-password | POST | students:manage |
+| /exams/:id/assignments | POST | assignments:manage |
+| /students/me/assignments, /students/:id/assignments | GET | assignments:read |
+| /reports/students, /classes, /exams, /listening | GET | reports:read |
+| /exams/:id/attempts | POST | own-attempts:manage |
+| /attempts/:id | GET | attempts:read |
+| /attempts/:id/answers | PATCH | own-attempts:manage |
+| /attempts/:id/submit | POST | own-attempts:manage |
+| /listening/sessions, /:id/events, /:id/end | POST | own-listening:write |
+| /exam-imports, /:id/review | POST | imports:manage |
+| /exam-imports/:id | GET | imports:manage |
 
-Classes và Teacher-specific data scope chưa có module hoặc policy nghiệp vụ được phê duyệt; khi bổ sung phải khai báo permission và resource scope trước khi mở route.
+Classes giới hạn Teacher theo lớp được phân công. Các route dự kiến cho lesson/progress/content chưa đăng ký; Swagger là danh sách endpoint thực tế.
 
 ## Dùng guard và decorator
 

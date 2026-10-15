@@ -116,3 +116,18 @@ Ngày kiểm tra: 14/10/2026.
 - Submit đồng thời/idempotent không tính lặp; lưu sau submit trả 409. Response snapshot không có answerKey.
 - Integration exam-content và media-assignment vẫn pass sau thay đổi schema/FK và truy cập media theo version attempt.
 - OpenAPI có đủ bốn route attempt; POST start mô tả 201. Hướng dẫn/chính sách scoring, retake và deadline ở [ATTEMPTS.md](./ATTEMPTS.md).
+
+## BE-014/015/016/017 — Listening, import, reports và operational hardening
+
+Ngày kiểm tra: 15/10/2026.
+
+- Build TypeScript pass; `npm test`: 9/9 test pass (contract, readiness, RBAC, scoring, Swagger, listening credit bounds, ZIP/schema validation, report calendar windows và upload rate limiting).
+- Migration `012_listening_import_reports_audit.sql` và `013_auth_session_audit.sql` áp dụng trên DB local. Fresh-database integration tạo DB tạm rỗng, chạy đủ migration và seed, kiểm tra bảng, chạy lại idempotent rồi dọn DB tạm: pass.
+- Bảy integration suites auth, RBAC, exam-content, media-assignment, attempt-scoring, listening-import-reports và fresh-migrations đều pass. Sau audit-session migration đã chạy lại auth/fresh; sau source redaction đã chạy lại listening/import/reports, exam-content và attempt-scoring.
+- Listening: chỉ audio LISTENING của pinned attempt được theo dõi; sai section 400, student khác 404, duplicate eventId không cộng trùng, payload khác cùng ID 409, tổng thời gian client gửi bị reject. Credit dựa trên thời gian server và playback events, PAUSE/SEEK/END đúng quy tắc.
+- Import thật DOCX/PDF/audio/PNG và ZIP exam.json đều tạo draft NEEDS_REVIEW; ZIP lỗi chuyển FAILED với code/reason cụ thể. Review chuyển READY nhưng không publish. Student bị 403 ở import, không xem draft; teacher khác 404. Source text vẫn có cho tác giả nhưng không có trong student exam hoặc attempt sau publish.
+- Reports đủ bốn endpoint; dựa trên graded attempts/playback events thật, phân trang, Teacher chỉ xem scope hợp lệ, student 403, thiếu token 401, filter class ngoài quyền 404, ISO week không tồn tại 400. Listening report sum event credits bằng tổng đã nhận từ server.
+- Audit DATABASE và REQUEST có bản ghi thật; không ghi payload/password/hash/token/answer key. Media attach chéo owner bằng UUID bị từ chối 404. Limiter upload trả 429 có correlation ID và Retry-After; upload validation/size regression vẫn pass.
+- Backup script đã chạy; restore rehearsal thành công với 12 migration đã restore và một file mẫu được so checksum trong database/volume tạm, rồi dọn tài nguyên tạm. Source database/media không bị ghi đè; writers được start lại.
+- Docker API/DB/worker healthy. `/health` và `/docs-json` 200; Swagger có đủ listening, import và reports routes, POST import mô tả 202.
+- API notes: [LISTENING_IMPORT_REPORTS.md](./LISTENING_IMPORT_REPORTS.md). Runbook staging, least-privilege grants, logging/audit, checkpoint/restore và rollback strategy: [STAGING.md](./STAGING.md). Chưa deploy lên hạ tầng staging bên ngoài; không có OCR/STT/antivirus hoặc auto-question extraction từ tài liệu tự do trong MVP.
