@@ -51,7 +51,7 @@ export class ManagementService {
   async listPeople(kind: 'student' | 'teacher', query: PersonListQueryDto): Promise<PaginatedResult<unknown>> {
     const profile = kind === 'student' ? 'student_profiles' : 'teacher_profiles';
     const codeColumn = kind === 'student' ? 'student_code' : 'teacher_code';
-    const where: string[] = [];
+    const where: string[] = ['u.deleted_at IS NULL'];
     const values: unknown[] = [];
     if (query.status) { values.push(query.status); where.push(`u.status = $${values.length}`); }
     if (query.q) {
@@ -72,7 +72,7 @@ export class ManagementService {
     const profile = kind === 'student' ? 'student_profiles' : 'teacher_profiles';
     const codeColumn = kind === 'student' ? 'student_code' : 'teacher_code';
     const result = await this.database.pool.query(`SELECT u.id,u.username,u.status,p.display_name AS "displayName",p.email,p.${codeColumn} AS code,u.created_at AS "createdAt",u.updated_at AS "updatedAt"
-      FROM academy.users u JOIN academy.${profile} p ON p.user_id=u.id WHERE u.id=$1`, [id]);
+      FROM academy.users u JOIN academy.${profile} p ON p.user_id=u.id WHERE u.id=$1 AND u.deleted_at IS NULL`, [id]);
     if (!result.rowCount) throw new NotFoundException('Resource not found');
     return result.rows[0];
   }
@@ -83,7 +83,7 @@ export class ManagementService {
     const client = await this.database.pool.connect();
     try {
       await client.query('BEGIN');
-      const exists = await client.query(`SELECT 1 FROM academy.${profile} WHERE user_id=$1 FOR UPDATE`, [id]);
+      const exists = await client.query(`SELECT 1 FROM academy.${profile} p JOIN academy.users u ON u.id=p.user_id WHERE p.user_id=$1 AND u.deleted_at IS NULL FOR UPDATE OF u,p`, [id]);
       if (!exists.rowCount) throw new NotFoundException('Resource not found');
       await client.query(`UPDATE academy.${profile} SET display_name=COALESCE($2,display_name),email=CASE WHEN $3 THEN $4 ELSE email END,${codeColumn}=CASE WHEN $5 THEN $6 ELSE ${codeColumn} END WHERE user_id=$1`,
         [id,input.displayName?.trim() ?? null,input.email !== undefined,input.email?.trim() ?? null,input.code !== undefined,input.code?.trim() ?? null]);
@@ -95,7 +95,7 @@ export class ManagementService {
 
   async updateStatus(kind: 'student' | 'teacher', id: string, status: string) {
     const profile = kind === 'student' ? 'student_profiles' : 'teacher_profiles';
-    const result = await this.database.pool.query(`UPDATE academy.users u SET status=$2 FROM academy.${profile} p WHERE u.id=$1 AND p.user_id=u.id RETURNING u.id,u.username,u.status,u.updated_at AS "updatedAt"`,[id,status]);
+    const result = await this.database.pool.query(`UPDATE academy.users u SET status=$2 FROM academy.${profile} p WHERE u.id=$1 AND p.user_id=u.id AND u.deleted_at IS NULL RETURNING u.id,u.username,u.status,u.updated_at AS "updatedAt"`,[id,status]);
     if (!result.rowCount) throw new NotFoundException('Resource not found');
     return result.rows[0];
   }
@@ -104,7 +104,7 @@ export class ManagementService {
     const temporaryPassword = randomBytes(24).toString('base64url');
     const hash = await this.passwords.hash(temporaryPassword);
     const result = await this.database.pool.query(`UPDATE academy.users u SET password_hash=$2
-      FROM academy.student_profiles p WHERE u.id=$1 AND p.user_id=u.id RETURNING u.id,u.username`,[id,hash]);
+      FROM academy.student_profiles p WHERE u.id=$1 AND p.user_id=u.id AND u.deleted_at IS NULL RETURNING u.id,u.username`,[id,hash]);
     if (!result.rowCount) throw new NotFoundException('Resource not found');
     return { ...result.rows[0], temporaryPassword };
   }

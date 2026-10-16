@@ -3,6 +3,7 @@ export type Role = typeof Role[keyof typeof Role];
 
 export const Permission = {
   SELF_READ: 'self:read',
+  ACCOUNTS_DELETE: 'accounts:delete',
   STUDENTS_READ: 'students:read',
   STUDENTS_MANAGE: 'students:manage',
   CONTENT_READ: 'content:read',
@@ -32,6 +33,7 @@ export type Permission = typeof Permission[keyof typeof Permission];
 // Explicit allowlists, no implicit role hierarchy. Resource ownership is checked in services.
 export const PERMISSION_ROLES: Readonly<Record<Permission, readonly Role[]>> = Object.freeze({
   [Permission.SELF_READ]: Object.freeze([Role.ADMIN, Role.TEACHER, Role.STUDENT]),
+  [Permission.ACCOUNTS_DELETE]: Object.freeze([Role.ADMIN]),
   [Permission.STUDENTS_READ]: Object.freeze([Role.ADMIN, Role.TEACHER]),
   [Permission.STUDENTS_MANAGE]: Object.freeze([Role.ADMIN, Role.TEACHER]),
   [Permission.TEACHERS_READ]: Object.freeze([Role.ADMIN, Role.TEACHER]),

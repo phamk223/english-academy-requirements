@@ -11,6 +11,7 @@ export interface RoutePermission {
 // Contract for future controllers, not route registration or a URL-based security matcher.
 // Actual controllers must use @RequirePermission() and enforce resource scope in services.
 export const ROUTE_PERMISSIONS: readonly RoutePermission[] = [
+  { module:'accounts',methods:['DELETE'],path:'/users/:id',permission:Permission.ACCOUNTS_DELETE,resourceScope:'center' },
   { module:'listening',methods:['POST'],path:'/listening/sessions',permission:Permission.OWN_LISTENING_WRITE,resourceScope:'self' },
   { module:'listening',methods:['POST'],path:'/listening/sessions/:id/events',permission:Permission.OWN_LISTENING_WRITE,resourceScope:'self' },
   { module:'listening',methods:['POST'],path:'/listening/sessions/:id/end',permission:Permission.OWN_LISTENING_WRITE,resourceScope:'self' },

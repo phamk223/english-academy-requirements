@@ -10,6 +10,7 @@ import { ListeningModule } from './modules/listening/listening.module';
 import { ImportModule } from './modules/imports/import.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { OperationsModule } from './modules/operations/operations.module';
+import { AccountsModule } from './modules/accounts/accounts.module';
 
-@Module({ imports: [HealthModule, AuthModule, ManagementModule, MediaModule, AssignmentModule, ExamModule, AttemptModule, ListeningModule, ImportModule, ReportsModule, OperationsModule] })
+@Module({ imports: [HealthModule, AuthModule, ManagementModule, MediaModule, AssignmentModule, ExamModule, AttemptModule, ListeningModule, ImportModule, ReportsModule, OperationsModule, AccountsModule] })
 export class AppModule {}

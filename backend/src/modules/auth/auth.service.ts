@@ -27,7 +27,7 @@ export class AuthService {
       FROM academy.users u
       LEFT JOIN academy.user_roles ur ON ur.user_id = u.id
       LEFT JOIN academy.roles r ON r.id = ur.role_id
-      WHERE u.id = $1 GROUP BY u.id`, [id]);
+      WHERE u.id = $1 AND u.deleted_at IS NULL GROUP BY u.id`, [id]);
     const user = result.rows[0];
     if (!user || user.status !== 'ACTIVE' || !user.roles.length) this.denied();
     return user;
@@ -51,7 +51,7 @@ export class AuthService {
 
   async login(username: string, password: string) {
     const found = await this.database.pool.query<{ id: string; password_hash: string }>(
-      'SELECT id, password_hash FROM academy.users WHERE username_normalized = lower(btrim($1))', [username]);
+      'SELECT id, password_hash FROM academy.users WHERE username_normalized = lower(btrim($1)) AND deleted_at IS NULL', [username]);
     const candidate = found.rows[0];
     const valid = await this.passwords.verify(candidate?.password_hash, password);
     if (!candidate || !valid) this.denied();
