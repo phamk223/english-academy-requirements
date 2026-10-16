@@ -6,12 +6,12 @@ import { CurrentUser } from '../auth/auth.service';
 export class AccountsService {
   constructor(@Inject(DatabaseService) private readonly db:DatabaseService){}
 
-  async remove(actor:CurrentUser,id:string){
+  async remove(actor:CurrentUser,id:string,kind?:'STUDENT'|'TEACHER'){
     if(actor.id===id)throw new ConflictException('Administrators cannot delete their own account');
     const client=await this.db.pool.connect();
     try{
       await client.query('BEGIN');
-      // Serialize account deletions so two administrators cannot delete each other concurrently.
+      // Serialize deletions and recheck the administrator and target roles inside the transaction.
       await client.query('SELECT pg_advisory_xact_lock(8701002)');
       const administrator=await client.query(`SELECT u.id FROM academy.users u
         WHERE u.id=$1 AND u.status='ACTIVE' AND u.deleted_at IS NULL
@@ -20,6 +20,12 @@ export class AccountsService {
       if(!administrator.rowCount)throw new ForbiddenException();
       const target=(await client.query('SELECT id,deleted_at FROM academy.users WHERE id=$1 FOR UPDATE',[id])).rows[0];
       if(!target)throw new NotFoundException('Resource not found');
+      const memberships=await client.query(`SELECT r.code FROM academy.user_roles ur JOIN academy.roles r ON r.id=ur.role_id WHERE ur.user_id=$1 FOR SHARE OF ur`,[id]);
+      const roles=memberships.rows.map(r=>r.code);
+      // ADMIN always takes precedence, including accounts that also have student/teacher roles.
+      if(roles.includes('ADMIN'))throw new ConflictException('Administrator accounts cannot be deleted');
+      if(kind&&!roles.includes(kind))throw new NotFoundException('Resource not found');
+      if(!roles.some(role=>role==='STUDENT'||role==='TEACHER'))throw new ConflictException('Only student and teacher accounts can be deleted');
       let deletedAt=target.deleted_at;
       if(!deletedAt){
         deletedAt=(await client.query(`UPDATE academy.users SET status='INACTIVE',deleted_at=clock_timestamp(),deleted_by=$2 WHERE id=$1 RETURNING deleted_at`,[id,actor.id])).rows[0].deleted_at;

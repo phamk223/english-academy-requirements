@@ -12,6 +12,8 @@ export interface RoutePermission {
 // Actual controllers must use @RequirePermission() and enforce resource scope in services.
 export const ROUTE_PERMISSIONS: readonly RoutePermission[] = [
   { module:'accounts',methods:['DELETE'],path:'/users/:id',permission:Permission.ACCOUNTS_DELETE,resourceScope:'center' },
+  { module:'students',methods:['DELETE'],path:'/students/:id',permission:Permission.ACCOUNTS_DELETE,resourceScope:'center' },
+  { module:'teachers',methods:['DELETE'],path:'/teachers/:id',permission:Permission.ACCOUNTS_DELETE,resourceScope:'center' },
   { module:'listening',methods:['POST'],path:'/listening/sessions',permission:Permission.OWN_LISTENING_WRITE,resourceScope:'self' },
   { module:'listening',methods:['POST'],path:'/listening/sessions/:id/events',permission:Permission.OWN_LISTENING_WRITE,resourceScope:'self' },
   { module:'listening',methods:['POST'],path:'/listening/sessions/:id/end',permission:Permission.OWN_LISTENING_WRITE,resourceScope:'self' },
@@ -33,7 +35,7 @@ export const ROUTE_PERMISSIONS: readonly RoutePermission[] = [
   { module: 'students', methods: ['PATCH'], path: '/students/:id', permission: Permission.STUDENTS_MANAGE, resourceScope: 'center' },
   { module: 'students', methods: ['POST'], path: '/students/:id/reset-password', permission: Permission.STUDENTS_MANAGE, resourceScope: 'center' },
   { module: 'students', methods: ['PATCH'], path: '/students/:id/status', permission: Permission.STUDENTS_MANAGE, resourceScope: 'center' },
-  { module: 'teachers', methods: ['GET','POST','PATCH','DELETE'], path: '/teachers/*', permission: Permission.TEACHERS_MANAGE, resourceScope: 'center' },
+  { module: 'teachers', methods: ['GET','POST','PATCH'], path: '/teachers/*', permission: Permission.TEACHERS_MANAGE, resourceScope: 'center' },
   { module: 'classes', methods: ['GET','POST','PATCH','DELETE'], path: '/classes/*', permission: Permission.CLASSES_MANAGE, resourceScope: 'assigned' },
   { module: 'classes', methods: ['GET'], path: '/classes/:id/members', permission: Permission.CLASSES_MEMBERS_READ, resourceScope: 'assigned' },
   { module: 'classes', methods: ['POST','DELETE'], path: '/classes/:id/members/*', permission: Permission.CLASSES_MEMBERS_MANAGE, resourceScope: 'assigned' },
