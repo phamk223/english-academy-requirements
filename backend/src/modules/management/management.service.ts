@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import { PoolClient } from 'pg';
 import { paginate, PaginatedResult } from '../../common/api/contract';
@@ -93,11 +93,32 @@ export class ManagementService {
     finally { client.release(); }
   }
 
-  async updateStatus(kind: 'student' | 'teacher', id: string, status: string) {
+  async updateStatus(actor: CurrentUser, kind: 'student' | 'teacher', id: string, status: string) {
     const profile = kind === 'student' ? 'student_profiles' : 'teacher_profiles';
-    const result = await this.database.pool.query(`UPDATE academy.users u SET status=$2 FROM academy.${profile} p WHERE u.id=$1 AND p.user_id=u.id AND u.deleted_at IS NULL RETURNING u.id,u.username,u.status,u.updated_at AS "updatedAt"`,[id,status]);
-    if (!result.rowCount) throw new NotFoundException('Resource not found');
-    return result.rows[0];
+    const client = await this.database.pool.connect();
+    try {
+      await client.query('BEGIN');
+      // Coordinate status changes with account deletion and recheck the operator in the transaction.
+      await client.query('SELECT pg_advisory_xact_lock(8701002)');
+      const administrator = await client.query(`SELECT u.id FROM academy.users u
+        WHERE u.id=$1 AND u.status='ACTIVE' AND u.deleted_at IS NULL
+        AND EXISTS(SELECT 1 FROM academy.user_roles ur JOIN academy.roles r ON r.id=ur.role_id WHERE ur.user_id=u.id AND r.code='ADMIN') FOR SHARE OF u`, [actor.id]);
+      if (!administrator.rowCount) throw new ForbiddenException();
+      const target = await client.query(`SELECT u.id FROM academy.users u JOIN academy.${profile} p ON p.user_id=u.id
+        WHERE u.id=$1 AND u.deleted_at IS NULL FOR UPDATE OF u`, [id]);
+      if (!target.rowCount) throw new NotFoundException('Resource not found');
+      const roles = await client.query(`SELECT r.code FROM academy.user_roles ur JOIN academy.roles r ON r.id=ur.role_id
+        WHERE ur.user_id=$1 FOR SHARE OF ur`, [id]);
+      if (roles.rows.some(role => role.code === 'ADMIN')) throw new ConflictException('Administrator accounts cannot be locked or have their status changed');
+      if (!roles.rows.some(role => role.code === kind.toUpperCase())) throw new NotFoundException('Resource not found');
+      const result = await client.query(`UPDATE academy.users SET status=$2 WHERE id=$1
+        RETURNING id,username,status,updated_at AS "updatedAt"`, [id,status]);
+      // Explicitly revoke sessions even when reapplying LOCKED/INACTIVE to the same account.
+      if (status !== 'ACTIVE') await client.query(`UPDATE academy.auth_sessions SET revoked_at=clock_timestamp() WHERE user_id=$1 AND revoked_at IS NULL`, [id]);
+      await client.query('COMMIT');
+      return result.rows[0];
+    } catch (error) { await client.query('ROLLBACK'); throw error; }
+    finally { client.release(); }
   }
 
   async resetStudentPassword(id: string) {

@@ -30,8 +30,8 @@ export class StudentsController {
   update(@Param('id',ParseUUIDPipe) id:string,@Body() body:UpdatePersonDto){return this.service.updatePerson('student',id,body);}
   @Post(':id/reset-password') @ApiOperation({summary:'Reset password; the new temporary password is returned once'}) @ApiSuccess(ManagedPersonDto) @ApiErrors(400,404)
   reset(@Param('id',ParseUUIDPipe) id:string){return this.service.resetStudentPassword(id);}
-  @Patch(':id/status') @ApiOperation({summary:'Change student status and revoke sessions when changed'}) @ApiSuccess(ManagedPersonDto) @ApiErrors(400,404)
-  status(@Param('id',ParseUUIDPipe) id:string,@Body() body:StatusDto){return this.service.updateStatus('student',id,body.status);}
+  @Patch(':id/status') @RequirePermission(Permission.ACCOUNTS_STATUS) @ApiOperation({summary:'ADMIN: lock/unlock student account',description:'Set LOCKED to block login and revoke all access/refresh tokens. Set ACTIVE to unlock; the user must log in again. INACTIVE is also supported. Accounts with ADMIN role are protected (409); deleted accounts cannot be restored (404).'}) @ApiSuccess(ManagedPersonDto) @ApiErrors(400,401,403,404,409)
+  status(@AuthenticatedUser() actor:CurrentUser,@Param('id',ParseUUIDPipe) id:string,@Body() body:StatusDto){return this.service.updateStatus(actor,'student',id,body.status);}
   @Delete(':id') @RequirePermission(Permission.ACCOUNTS_DELETE) @HttpCode(200)
   @ApiOperation({summary:'Delete former student account and revoke all tokens',description:'ADMIN operator only. Soft delete preserves exam history; account cannot log in or be reactivated. Any account that also has ADMIN role is protected (409).'})
   @ApiBody({required:false,schema:{type:'object',additionalProperties:false}}) @ApiSuccess(DeletedAccountResponseDto) @ApiErrors(400,401,403,404,409)
@@ -52,8 +52,8 @@ export class TeachersController {
   get(@Param('id',ParseUUIDPipe) id:string){return this.service.getPerson('teacher',id);}
   @Patch(':id') @ApiOperation({summary:'Update teacher profile'}) @ApiSuccess(ManagedPersonDto) @ApiErrors(400,404,409)
   update(@Param('id',ParseUUIDPipe) id:string,@Body() body:UpdatePersonDto){return this.service.updatePerson('teacher',id,body);}
-  @Patch(':id/status') @ApiOperation({summary:'Change teacher status; inactive/locked teachers lose access'}) @ApiSuccess(ManagedPersonDto) @ApiErrors(400,404)
-  status(@Param('id',ParseUUIDPipe) id:string,@Body() body:StatusDto){return this.service.updateStatus('teacher',id,body.status);}
+  @Patch(':id/status') @RequirePermission(Permission.ACCOUNTS_STATUS) @ApiOperation({summary:'ADMIN: lock/unlock teacher account',description:'Set LOCKED to block login and revoke all access/refresh tokens. Set ACTIVE to unlock; the user must log in again. INACTIVE is also supported. Accounts with ADMIN role are protected (409); deleted accounts cannot be restored (404).'}) @ApiSuccess(ManagedPersonDto) @ApiErrors(400,401,403,404,409)
+  status(@AuthenticatedUser() actor:CurrentUser,@Param('id',ParseUUIDPipe) id:string,@Body() body:StatusDto){return this.service.updateStatus(actor,'teacher',id,body.status);}
   @Delete(':id') @RequirePermission(Permission.ACCOUNTS_DELETE) @HttpCode(200) @Header('Cache-Control','no-store')
   @ApiOperation({summary:'Delete former teacher account and revoke all tokens',description:'ADMIN operator only. Soft delete preserves exam/class history; account cannot log in or be reactivated. Any account that also has ADMIN role is protected (409).'})
   @ApiBody({required:false,schema:{type:'object',additionalProperties:false}}) @ApiSuccess(DeletedAccountResponseDto) @ApiErrors(400,401,403,404,409)

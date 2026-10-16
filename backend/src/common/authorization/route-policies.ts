@@ -11,6 +11,7 @@ export interface RoutePermission {
 // Contract for future controllers, not route registration or a URL-based security matcher.
 // Actual controllers must use @RequirePermission() and enforce resource scope in services.
 export const ROUTE_PERMISSIONS: readonly RoutePermission[] = [
+  { module:'teachers',methods:['PATCH'],path:'/teachers/:id/status',permission:Permission.ACCOUNTS_STATUS,resourceScope:'center' },
   { module:'accounts',methods:['DELETE'],path:'/users/:id',permission:Permission.ACCOUNTS_DELETE,resourceScope:'center' },
   { module:'students',methods:['DELETE'],path:'/students/:id',permission:Permission.ACCOUNTS_DELETE,resourceScope:'center' },
   { module:'teachers',methods:['DELETE'],path:'/teachers/:id',permission:Permission.ACCOUNTS_DELETE,resourceScope:'center' },
@@ -34,7 +35,7 @@ export const ROUTE_PERMISSIONS: readonly RoutePermission[] = [
   { module: 'students', methods: ['POST'], path: '/students', permission: Permission.STUDENTS_MANAGE, resourceScope: 'center' },
   { module: 'students', methods: ['PATCH'], path: '/students/:id', permission: Permission.STUDENTS_MANAGE, resourceScope: 'center' },
   { module: 'students', methods: ['POST'], path: '/students/:id/reset-password', permission: Permission.STUDENTS_MANAGE, resourceScope: 'center' },
-  { module: 'students', methods: ['PATCH'], path: '/students/:id/status', permission: Permission.STUDENTS_MANAGE, resourceScope: 'center' },
+  { module: 'students', methods: ['PATCH'], path: '/students/:id/status', permission: Permission.ACCOUNTS_STATUS, resourceScope: 'center' },
   { module: 'teachers', methods: ['GET','POST','PATCH'], path: '/teachers/*', permission: Permission.TEACHERS_MANAGE, resourceScope: 'center' },
   { module: 'classes', methods: ['GET','POST','PATCH','DELETE'], path: '/classes/*', permission: Permission.CLASSES_MANAGE, resourceScope: 'assigned' },
   { module: 'classes', methods: ['GET'], path: '/classes/:id/members', permission: Permission.CLASSES_MEMBERS_READ, resourceScope: 'assigned' },
